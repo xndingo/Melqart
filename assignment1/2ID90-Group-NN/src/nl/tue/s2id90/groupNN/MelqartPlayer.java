@@ -3,6 +3,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import java.util.Collections;
 import java.util.List;
+import nl.tue.s2id90.draughts.Draughts;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import nl.tue.s2id90.game.GameState;
@@ -31,7 +32,17 @@ public class MelqartPlayer extends DraughtsPlayer {
         return 0;
     }
     
-    int alphaBeta (GameNode node, int alpha, int beta, boolean maximizingPlayer){
+    /**
+     * It applies the alpha-beta min-max algorithm given a 
+     * game node {@code node}, an integer alpha, an integer beta
+     * and if it's a maximizing player or not as a boolean.     * 
+     * @param node game node
+     * @param alpha integer
+     * @param beta integer
+     * @param maximizingPlayer boolean
+     * @return alpha or beta integers
+     */
+    public int alphaBeta (GameNode node, int alpha, int beta, boolean maximizingPlayer){
         GameState state = node.getState();
         List <Move> moves = state.getMoves();
         if (maximizingPlayer) {
@@ -58,15 +69,31 @@ public class MelqartPlayer extends DraughtsPlayer {
                 return beta;                        
             }
         }
-        return 0;
-                    
-                    }
-        Move bestMove = null;
-        
-        
-        node.setBestMove(bestMove);
-        return 0;
+        return 0;                    
     }
+    
+    /**
+     * Returns the amount of pieces that are on the board
+     * given a game state {@code gs}
+     * @param gs game state of the board
+     * @return the amount of pieces that are on the board. 0 if empty.
+     */
+    private int getPieceCount(DraughtsState gs) {
+        int[] pieces = gs.getPieces();
+        int count = 0;
+        for(int f=1; f<pieces.length; f=f+1) {
+            int piece = pieces[f];
+            //if (Draughts.isWhite(piece) || Draughts.isBlack(piece)) count++;
+            if (piece != 0){
+                count++;            
+            }
+        }
+        
+        return count;
+    }    
+    
+
+    
     
     private boolean stopped = false ;
     @Override
@@ -76,6 +103,6 @@ public class MelqartPlayer extends DraughtsPlayer {
     if ( stopped ) {
     stopped = false ;
     throw new AIStoppedException ( ) ;
- }
+    }
     //.. .
-}
+    }
