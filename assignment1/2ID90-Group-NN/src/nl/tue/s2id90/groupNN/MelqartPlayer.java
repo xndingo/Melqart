@@ -79,7 +79,7 @@ public class MelqartPlayer extends DraughtsPlayer {
      * @param gs game state of the board
      * @return the amount of pieces that are on the board. 0 if empty.
      */
-    private int getPieceCount(DraughtsState gs) {
+    public int getPieceCount(DraughtsState gs) {
         int[] pieces = gs.getPieces();
         int count = 0;
         for (int f = 1; f < pieces.length; f = f+1) {
@@ -89,7 +89,22 @@ public class MelqartPlayer extends DraughtsPlayer {
             }
         }        
         return count; //0 if no pieces on the board.
-    }      
+    }   
+    
+    /**
+     * Evaluates the state of the draughts board.
+     * @param ds draught state
+     * @return an integer evaluation of the draughts state
+     */
+    public int evaluate (DraughtsState ds) {
+        // obtain piecesarray
+        int[] pieces = ds.getPieces();
+        int eval = 0;
+        // compute a value for this state, e.g.
+        // by compareing p[i] to WHITEPIECE, WHITEKING, etc
+        //. . .
+        return 0;
+    }
 
     private boolean stopped = false ;
     @Override
