@@ -9,8 +9,7 @@ import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import nl.tue.s2id90.game.GameState;
 import org10x10.dam.game.Move;
 
-/**
- *
+/** 
  * @author Jeroen van Hoof
  * @author Theodore Margomenos
  */
@@ -56,6 +55,7 @@ public class MelqartPlayer extends DraughtsPlayer {
                 state.undoMove(move);
                 return alpha;                                 
             }
+            node.setBestMove(alpha);
         }
         else { //minimizingPlayer
             for (Move move : moves){
@@ -68,6 +68,7 @@ public class MelqartPlayer extends DraughtsPlayer {
                 state.undoMove(move);
                 return beta;                        
             }
+            node.setBestMove(beta);
         }
         return 0;                    
     }
@@ -81,26 +82,27 @@ public class MelqartPlayer extends DraughtsPlayer {
     private int getPieceCount(DraughtsState gs) {
         int[] pieces = gs.getPieces();
         int count = 0;
-        for(int f=1; f<pieces.length; f=f+1) {
+        for (int f = 1; f < pieces.length; f = f+1) {
             int piece = pieces[f];
-            if (Draughts.isWhite(piece) || Draughts.isBlack(piece)) count++;
+            if (Draughts.isWhite(piece) || Draughts.isBlack(piece)) {
                 count++;            
             }
-        return count; //0 if no pieces on the board.
         }        
-    }    
-    
+        return count; //0 if no pieces on the board.
+    }      
 
-    
-    
     private boolean stopped = false ;
     @Override
-    public void stop ( ) { stopped = true ; }
-    int alphaBeta (GameNode node , int alpha , int beta )
-    throws AIStoppedException {
-    if ( stopped ) {
-    stopped = false ;
-    throw new AIStoppedException ( ) ;
+    public void stop ( ) { 
+        stopped = true ; 
     }
+    int alphaBeta(GameNode node, int alpha, int beta) 
+        throws AIStoppedException {
+        if (stopped) {
+            stopped = false;
+            throw new AIStoppedException();
+        }
     //.. .
+        return 0;
     }
+}
