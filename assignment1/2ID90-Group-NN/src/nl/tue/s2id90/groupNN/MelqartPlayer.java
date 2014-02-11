@@ -83,13 +83,11 @@ public class MelqartPlayer extends DraughtsPlayer {
         int count = 0;
         for(int f=1; f<pieces.length; f=f+1) {
             int piece = pieces[f];
-            //if (Draughts.isWhite(piece) || Draughts.isBlack(piece)) count++;
-            if (piece != 0){
+            if (Draughts.isWhite(piece) || Draughts.isBlack(piece)) count++;
                 count++;            
             }
-        }
-        
-        return count;
+        return count; //0 if no pieces on the board.
+        }        
     }    
     
 
