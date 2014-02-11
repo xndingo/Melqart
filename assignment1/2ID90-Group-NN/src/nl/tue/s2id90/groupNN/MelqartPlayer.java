@@ -1,8 +1,11 @@
 package nl.tue.s2id90.groupNN;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import java.util.Collections;
 import java.util.List;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
+import nl.tue.s2id90.game.GameState;
 import org10x10.dam.game.Move;
 
 /**
@@ -28,23 +31,51 @@ public class MelqartPlayer extends DraughtsPlayer {
         return 0;
     }
     
-    int alphaBeta (GameNode node, int alpha, int beta){
+    int alphaBeta (GameNode node, int alpha, int beta, boolean maximizingPlayer){
         GameState state = node.getState();
         List <Move> moves = state.getMoves();
-        for (Move move : moves){
-            state.doMove(move);
-            // recursive call 
-            
-            int newAlpha =  Maximum(alpha, AlphaBeta(state.doMove(move, alpha, beta ))
-            int newBeta = 
-            GameNode node = 
-            alphaBeta(GameNode node, int newAlpha, int newBeta);
-            state.undoMove(move);
-        }g
+        if (maximizingPlayer) {
+            for (Move move : moves){
+                state.doMove(move);
+                // recursive call
+                alpha = max(alpha, alphaBeta(node, alpha, beta, maximizingPlayer));
+                if (beta <= alpha) {
+                    break; //b cut off
+                }
+                state.undoMove(move);
+                return alpha;                                 
+            }
+        }
+        else { //minimizingPlayer
+            for (Move move : moves){
+                state.doMove(move);
+                // recursive call
+                beta = min(beta, alphaBeta(node, alpha, beta, true));
+                if (beta <= alpha) {
+                    break; //a cut off
+                }
+                state.undoMove(move);
+                return beta;                        
+            }
+        }
+        return 0;
+                    
+                    }
         Move bestMove = null;
         
         
         node.setBestMove(bestMove);
         return 0;
     }
+    
+    private boolean stopped = false ;
+    @Override
+    public void stop ( ) { stopped = true ; }
+    int alphaBeta (GameNode node , int alpha , int beta )
+    throws AIStoppedException {
+    if ( stopped ) {
+    stopped = false ;
+    throw new AIStoppedException ( ) ;
+ }
+    //.. .
 }
