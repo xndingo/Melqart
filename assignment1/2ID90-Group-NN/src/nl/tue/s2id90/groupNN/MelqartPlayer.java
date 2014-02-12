@@ -31,6 +31,109 @@ public class MelqartPlayer extends DraughtsPlayer {
         return 0;
     }
     
+    // Material
+    final int KING = 30;      // Number of kings
+    final int DRAUGHT = 10;   // Number of draughts
+    
+    // Infastructure
+    final int MOVE = 4;       // Number of possible moves
+    final int MIRROR = 5;     // Number of opposing draughts
+    final int DISTR = 5;      // Distribution of draughts in three columns
+    
+    // Strategy
+    final int SIDE = 6;       // Number of draughts on the sides
+    final int LAST = 7;       // Number of draughts on last line
+    final int STEPS = 4;      // Manhattan distance to end (except Kings)
+    final int DEF = 8;        // Number of defended draughts
+    
+    /**
+     * Evaluates the current DraughtsState.
+     * 
+     * @param ds The DraughtsState.
+     * @return The value of the current state.
+     */
+    int evaluate(DraughtsState ds){
+        int total = 0;
+        boolean white = ds.isWhiteToMove();
+        total = evalMaterial(ds, white) + evalInfrastructure(ds, white);
+        
+        return total;
+    }
+
+    /**
+     * Evaluates the material value.
+     * 
+     * @param ds The DraughtsState.
+     * @param white If true, then white has to move.
+     * @return The value of the material of the player that has to move.
+     */
+    int evalMaterial(DraughtsState ds, boolean white){
+        int material = 0;
+        int[] pieces = ds.getPieces();
+        int draught = DraughtsState.WHITEPIECE;
+        int king = DraughtsState.WHITEKING;
+        if (!white){
+            draught = DraughtsState.BLACKPIECE;
+            king = DraughtsState.BLACKKING;
+        }
+        for (int piece : pieces){
+            if (piece == draught){
+                material += DRAUGHT;
+            } else if (piece == king){
+                material += KING;
+            }
+        }
+        return material;
+    }
+    
+    /**
+     * Evaluate the infrastructure.
+     * Calculates the possible moves, the playground size per piece,
+     * the distribution over 3 sectors and the number of pieces that are in
+     * a row of 3 or more.
+     * 
+     * @param ds The current DraughtsState.
+     * @param white If true, white has to move.
+     * @return The evaluation score.
+     */
+    int evalInfrastructure(DraughtsState ds, boolean white){
+        // Possible moves.
+        int moves = ds.getMoves().size();
+        
+        // Calculate size of playground per piece.
+        
+        // Distribution over 3 sectors (calculate own disadvantage per column)
+        int[] pieces = ds.getPieces();
+        int whiteleft = 0, blackleft = 0, whiteright = 0, blackright = 0, whitecenter = 0, blackcenter = 0;
+        for (int i = 1; i <= 50; i++){
+            if (i%10 == 1 || i%10 == 6 || i%10 == 7){ // left column
+                if(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING){
+                    whiteleft++;
+                } else if(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING){
+                    blackleft++;
+                }
+            } else if (i%10 == 0 || i%10 == 4 || i%10 == 5){ // right column
+                if(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING){
+                    whiteright++;
+                } else if(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING){
+                    blackright++;
+                }
+            } else { // middle column
+                if(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING){
+                    whitecenter++;
+                } else if (pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING){
+                    blackcenter++;                
+                }
+            }
+        }        
+        int distribution = whiteleft-blackleft + whiteright-blackright + whitecenter-blackcenter;
+        if (!white){distribution -= distribution;}
+        // Number of pieces that are in a row of 3 or more
+        
+        // Return
+        return DISTR * distribution + MOVE * moves;
+    }
+    
     /**
      * It applies the alpha-beta min-max algorithm given a 
      * game node {@code node}, an integer alpha, an integer beta
@@ -90,21 +193,6 @@ public class MelqartPlayer extends DraughtsPlayer {
         }        
         return count; //0 if no pieces on the board.
     }   
-    
-    /**
-     * Evaluates the state of the draughts board.
-     * @param ds draught state
-     * @return an integer evaluation of the draughts state
-     */
-    public int evaluate (DraughtsState ds) {
-        // obtain piecesarray
-        int[] pieces = ds.getPieces();
-        int eval = 0;
-        // compute a value for this state, e.g.
-        // by compareing p[i] to WHITEPIECE, WHITEKING, etc
-        //. . .
-        return 0;
-    }
 
     private boolean stopped = false ;
     @Override
