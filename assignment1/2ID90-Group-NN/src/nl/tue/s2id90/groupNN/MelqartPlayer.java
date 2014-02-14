@@ -11,7 +11,7 @@ import org10x10.dam.game.Move;
 
 /** 
  * @author Jeroen van Hoof
- * @author Theodore Margomenos
+ * @author Theodoros Margomenos
  */
 public class MelqartPlayer extends DraughtsPlayer {
     
@@ -155,10 +155,10 @@ public class MelqartPlayer extends DraughtsPlayer {
                 if (beta <= alpha) {
                     break; //b cut off
                 }
-                state.undoMove(move);
-                return alpha;                                 
+                state.undoMove(move);                                
             }
             node.setBestMove(alpha);
+            return alpha;           
         }
         else { //minimizingPlayer
             for (Move move : moves){
@@ -168,12 +168,11 @@ public class MelqartPlayer extends DraughtsPlayer {
                 if (beta <= alpha) {
                     break; //a cut off
                 }
-                state.undoMove(move);
-                return beta;                        
+                state.undoMove(move);                     
             }
             node.setBestMove(beta);
-        }
-        return 0;                    
+            return beta; 
+        }                   
     }
     
     /**

@@ -14,7 +14,7 @@ import org10x10.dam.game.Move;
 
 /** 
  * @author Jeroen van Hoof
- * @author Theodore Margomenos
+ * @author Theodoros Margomenos
  */
 public class RandomDraughtsPlayer extends DraughtsPlayer{
     @Override
