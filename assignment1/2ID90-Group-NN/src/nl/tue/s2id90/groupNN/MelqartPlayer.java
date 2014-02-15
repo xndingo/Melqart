@@ -36,6 +36,7 @@ public class MelqartPlayer extends DraughtsPlayer {
     final int DRAUGHT = 10;   // Number of draughts
     
     // Infastructure
+    final double PLAY = 0.4;       // Playground
     final int MOVE = 4;       // Number of possible moves
     final int MIRROR = 5;     // Number of opposing draughts
     final int DISTR = 5;      // Distribution of draughts in three columns
@@ -52,8 +53,8 @@ public class MelqartPlayer extends DraughtsPlayer {
      * @param ds The DraughtsState.
      * @return The value of the current state.
      */
-    int evaluate(DraughtsState ds){
-        int total = 0;
+    double evaluate(DraughtsState ds){
+        double total = 0;
         boolean white = ds.isWhiteToMove();
         total = evalMaterial(ds, white) + evalInfrastructure(ds, white);
         
@@ -96,14 +97,62 @@ public class MelqartPlayer extends DraughtsPlayer {
      * @param white If true, white has to move.
      * @return The evaluation score.
      */
-    int evalInfrastructure(DraughtsState ds, boolean white){
+    double evalInfrastructure(DraughtsState ds, boolean white){
         // Possible moves.
         int moves = ds.getMoves().size();
         
         // Calculate size of playground per piece.
+        int[] pieces = ds.getPieces();
+        int playgrounds = 0;
+        for (int i = 1; i <= 50; i++){
+            if (pieces[i] == DraughtsState.WHITEPIECE 
+                    || pieces[i] == DraughtsState.BLACKPIECE){
+                // Determine column x and row y.
+                int x = 0, y = 0, triangleR = 0, triangleL = 0;
+                y = (int) Math.ceil(i/5);
+                if (i % 10 == 6){ x = 1; }
+                if (i % 10 == 1){ x = 2; }
+                if (i % 10 == 7){ x = 3; }
+                if (i % 10 == 2){ x = 4; }
+                if (i % 10 == 8){ x = 5; }
+                if (i % 10 == 3){ x = 6; }
+                if (i % 10 == 9){ x = 7; }
+                if (i % 10 == 4){ x = 8; }
+                if (i % 10 == 0){ x = 9; }
+                if (i % 10 == 5){ x = 10; }
+                
+                // Flip the board for black.
+                if (!white){
+                    x = 10 - x + 1;
+                    y = 10 - y + 1;
+                }
+                
+                // Calculate the big triangle
+                int bigTriangle = y/2*(y+1);
+                // Overflow on right side
+                int baseR = y - 1 + x - 10;
+                if (baseR > 0){
+                    // Calculate triangle right
+                    triangleR = (baseR-1)/2*baseR;  
+                }
+                
+                // Overflow on left side
+                int baseL = y - x;
+                if (baseL > 0){
+                    // Calculate triangle left
+                    triangleL = (baseL+1)/2*baseL;  
+                }
+                
+                int playground = bigTriangle - triangleR - triangleL;
+                playgrounds += playground;
+            } else if (pieces[i] == DraughtsState.WHITEKING 
+                    || pieces[i] == DraughtsState.BLACKKING){
+                // Everything is reachable for a king.
+                playgrounds += 50; 
+            }
+        }
         
         // Distribution over 3 sectors (calculate own disadvantage per column)
-        int[] pieces = ds.getPieces();
         int whiteleft = 0, blackleft = 0, whiteright = 0, blackright = 0, whitecenter = 0, blackcenter = 0;
         for (int i = 1; i <= 50; i++){
             if (i%10 == 1 || i%10 == 6 || i%10 == 7){ // left column
@@ -128,10 +177,11 @@ public class MelqartPlayer extends DraughtsPlayer {
         }        
         int distribution = whiteleft-blackleft + whiteright-blackright + whitecenter-blackcenter;
         if (!white){distribution -= distribution;}
+        
         // Number of pieces that are in a row of 3 or more
         
         // Return
-        return DISTR * distribution + MOVE * moves;
+        return DISTR * distribution + MOVE * moves + PLAY * playgrounds;
     }
     
     /**
