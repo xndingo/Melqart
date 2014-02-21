@@ -17,7 +17,8 @@ import javax.swing.JPanel;
  * @param <P>
  * @param <Move>
  */
-public interface GameGUI<State extends GameState<Move>,P extends Player<Move,State>,Move> {
+public interface GameGUI<State extends GameState<Move>,P extends Player<Move,State>,Move> 
+                 extends CompetitionListener<Move> {
     /** get a board that shows the game state and maybe allows interactions for
      * a human player.
      * @return a panel containing such a board widget
@@ -36,18 +37,5 @@ public interface GameGUI<State extends GameState<Move>,P extends Player<Move,Sta
     
     /** returns the current game state.
      * @return  **/
-    State getGameState();
-    
-    /**
-     * enables a human player to play one move, the listener's onMove method is
-     * called when that happens.
-     * @see HumanMoveListener
-     * enableASingleHumanMove a move listener
-     * @param ml **/
-    void enableASingleHumanMove(HumanMoveListener<Move> ml);
-    
-    /**
-     * 
-     */
-    void setGameStatusText(String status);
+    State getCurrentGameState();
 }

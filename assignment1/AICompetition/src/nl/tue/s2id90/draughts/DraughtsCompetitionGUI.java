@@ -11,8 +11,15 @@ import org10x10.dam.game.Move;
 public class DraughtsCompetitionGUI 
 extends CompetitionGUI<DraughtsPlayer, DraughtsPlugin, Move, DraughtsState> {
     DraughtsCompetitionGUI(String[] pluginFolders) {
-        super(DraughtsPlugin.class,pluginFolders, new DraughtsGUI());
+        super(DraughtsPlugin.class,pluginFolders);
+        DraughtsGUI gui = new DraughtsGUI();
+        initComponents(gui);
+        
+        // listen to eachother's events
+        this.add(gui);
+        gui.add(this);
     }
+    
    /**
      * @param args the command line arguments
      */

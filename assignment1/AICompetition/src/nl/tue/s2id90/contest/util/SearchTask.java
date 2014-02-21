@@ -46,7 +46,14 @@ public abstract class SearchTask<M,U,S extends GameState<M>>
     /** @return the moves of player in this state. **/
     private M search() {
         if (player!=null) {
-            return player.getMove(state);
+            try {
+                // we clone the state here, so whatever the player does with the
+                // state, will not ruin the GUI!
+                return player.getMove((S)state.clone());
+            } catch(Exception e) {
+                System.err.println(e);
+                return null;
+            }
         } else {
             return null;
         }
@@ -61,18 +68,18 @@ public abstract class SearchTask<M,U,S extends GameState<M>>
         return new SwingWorker<M,U>() {
             @Override
             protected M doInBackground() throws Exception {
-                System.err.println("searchtask.doInBackground");
-                return SearchTask.this.search();
+                    return SearchTask.this.search();
             }
 
             @Override
             protected void done() {
                 try {
-                    System.err.println("searchTask.done()");
                     M m = get(); // gets computed move
                     SearchTask.this.done(m);
                     
-                } catch (InterruptedException | ExecutionException ex) { }
+                } catch (InterruptedException | ExecutionException ex) { 
+                    System.err.println("Exception in search task: " + ex);
+                }
             }            
         };
     }

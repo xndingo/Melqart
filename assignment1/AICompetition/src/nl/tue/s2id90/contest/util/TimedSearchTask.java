@@ -21,7 +21,6 @@ import nl.tue.s2id90.game.Player;
  */
 public abstract class TimedSearchTask<M, U, S extends GameState<M>>
     extends SearchTask<M, U, S> {
-    Timer timer= new Timer();
     public TimedSearchTask(Player<M, S> player, S s, int timeLimitInSeconds) {
         super(player, s);
         TimerTask task = new TimerTask() {
@@ -30,7 +29,7 @@ public abstract class TimedSearchTask<M, U, S extends GameState<M>>
                 TimedSearchTask.this.stop();
             }            
         };
-        timer.schedule(task, timeLimitInSeconds*1000);
+        Timer timer= new Timer(); timer.schedule(task, timeLimitInSeconds*1000);
     }
     
 }

@@ -16,6 +16,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
@@ -32,9 +33,11 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.LayoutStyle;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
@@ -56,26 +59,33 @@ import nl.tue.s2id90.pluginservice.Plugins;
  * @param <M> Move
  * @param <S> GameState<M>
  */
-public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P>, M, S extends GameState<M>> extends javax.swing.JFrame {
+public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P>, M, S extends GameState<M>> 
+    extends javax.swing.JFrame implements GameGuiListener<S,M> {
     private static final Logger LOG = Logger.getLogger(CompetitionGUI.class.getName());
     
     
     private List<Game> schedule;
     
-    private final GameGUI<S,P,M> gameGUI;
+    protected GameGUI<S,P,M> gameGUI;
     private final Class<Plugin> clazz;
     private final String[] pluginFolders;
+    protected Game currentGame=null;     // reference to current game, if this reference is null, there is no game going on
+    protected List<CompetitionListener<M>> listeners = new ArrayList<>();
     
     /**
      * Creates new form CompetitionGUI
      * @param clazz
      * @param gameGUI
      */
-    public CompetitionGUI(Class<Plugin> clazz, String[] pluginFolders, final GameGUI<S,P,M> gameGUI) {
+    public CompetitionGUI(Class<Plugin> clazz, String[] pluginFolders) {
         this.clazz = clazz;
         this.pluginFolders = pluginFolders;
+    }
+    
+    public void initComponents(GameGUI<S,P,M> gameGUI) {
         this.gameGUI = gameGUI;
         initComponents();
+        
        
         JPanel boardPanel = gameGUI.getBoardPanel();
         boardContainerPanel.add(boardPanel,BorderLayout.CENTER);
@@ -84,6 +94,8 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         for(JComponent tab : tabs) {
             tabbedPane.add(tab);
         }
+        
+        tabbedPane.remove(rankingPanel);
     }
 
     /**
@@ -105,11 +117,12 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         createScheduleButton = new JButton();
         startGameButton = new JButton();
         stopGameButton = new JButton();
-        JPanel jPanel9 = new JPanel();
+        timeSlider = new JSlider();
+        rankingPanel = new JPanel();
         jScrollPane2 = new JScrollPane();
         rankingTable = new JTable();
         JPanel jPanel7 = new JPanel();
-        numberOfPiecesLabel = new JLabel();
+        statusLabel = new JLabel();
         JPanel jPanel5 = new JPanel();
         blackPanel = new JPanel();
         blackLabel = new JLabel();
@@ -123,7 +136,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         whiteValueLabel = new JLabel();
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle("ACT: AI Competition Tool");
+        setTitle("ACT: AI Competition Tool 0.2");
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
         boardContainerPanel.setPreferredSize(new Dimension(450, 450));
@@ -137,6 +150,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         tabbedPane.setPreferredSize(new Dimension(458, 300));
 
         gamesPanel.setPreferredSize(new Dimension(295, 300));
+        gamesPanel.setLayout(new BorderLayout());
 
         jScrollPane1.setPreferredSize(new Dimension(453, 300));
 
@@ -163,7 +177,10 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
                 return canEdit [columnIndex];
             }
         });
+        gamesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(gamesTable);
+
+        gamesPanel.add(jScrollPane1, BorderLayout.CENTER);
 
         createScheduleButton.setText("<html>create<br>schedule");
         createScheduleButton.addActionListener(new ActionListener() {
@@ -173,6 +190,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         });
 
         startGameButton.setText("<html>start<br>game");
+        startGameButton.setEnabled(false);
         startGameButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 startGameButtonActionPerformed(evt);
@@ -180,52 +198,56 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         });
 
         stopGameButton.setText("<html>stop<br>game");
+        stopGameButton.setEnabled(false);
         stopGameButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 stopGameButtonActionPerformed(evt);
             }
         });
 
+        timeSlider.setMajorTickSpacing(1);
+        timeSlider.setMaximum(8);
+        timeSlider.setMinimum(1);
+        timeSlider.setPaintLabels(true);
+        timeSlider.setPaintTicks(true);
+        timeSlider.setPaintTrack(false);
+        timeSlider.setSnapToTicks(true);
+        timeSlider.setToolTipText("<html>maximum thinking time<br>for computer player");
+        timeSlider.setValue(2);
+
         GroupLayout jPanel3Layout = new GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(createScheduleButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(startGameButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(stopGameButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 39, Short.MAX_VALUE))
+            .addGroup(GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                    .addComponent(timeSlider, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(createScheduleButton, GroupLayout.PREFERRED_SIZE, 88, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(startGameButton, GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(stopGameButton, GroupLayout.PREFERRED_SIZE, 88, GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(createScheduleButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(startGameButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(createScheduleButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(startGameButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addComponent(stopGameButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(timeSlider, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        GroupLayout gamesPanelLayout = new GroupLayout(gamesPanel);
-        gamesPanel.setLayout(gamesPanelLayout);
-        gamesPanelLayout.setHorizontalGroup(
-            gamesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-            .addComponent(jPanel3, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        gamesPanelLayout.setVerticalGroup(
-            gamesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(gamesPanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-        );
+        gamesPanel.add(jPanel3, BorderLayout.SOUTH);
 
         tabbedPane.addTab("games", gamesPanel);
 
-        jPanel9.setLayout(new BorderLayout());
+        rankingPanel.setLayout(new BorderLayout());
 
         rankingTable.setModel(new DefaultTableModel(
             new Object [][] {
@@ -246,27 +268,27 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         rankingTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         jScrollPane2.setViewportView(rankingTable);
 
-        jPanel9.add(jScrollPane2, BorderLayout.CENTER);
+        rankingPanel.add(jScrollPane2, BorderLayout.CENTER);
 
-        tabbedPane.addTab("ranking", jPanel9);
+        tabbedPane.addTab("ranking", rankingPanel);
 
         jPanel2.add(tabbedPane, BorderLayout.CENTER);
 
         jPanel7.setPreferredSize(new Dimension(300, 50));
 
-        numberOfPiecesLabel.setFont(new Font("Dialog", 1, 24)); // NOI18N
-        numberOfPiecesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        numberOfPiecesLabel.setText("   -   ");
+        statusLabel.setFont(new Font("Dialog", 1, 24)); // NOI18N
+        statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        statusLabel.setText("   -   ");
 
         GroupLayout jPanel7Layout = new GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(numberOfPiecesLabel, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .addComponent(statusLabel, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(numberOfPiecesLabel, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+            .addComponent(statusLabel, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
         );
 
         jPanel2.add(jPanel7, BorderLayout.PAGE_START);
@@ -311,7 +333,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
                 .addComponent(jLabel1, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(blackValueLabel)
-                .addContainerGap(164, Short.MAX_VALUE))
+                .addContainerGap(203, Short.MAX_VALUE))
         );
 
         blackPanel.add(jPanel6, BorderLayout.CENTER);
@@ -349,7 +371,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
-                .addGap(0, 175, Short.MAX_VALUE)
+                .addGap(0, 215, Short.MAX_VALUE)
                 .addComponent(jLabel3)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(whiteValueLabel))
@@ -365,7 +387,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
     }// </editor-fold>//GEN-END:initComponents
 
     private void createScheduleButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_createScheduleButtonActionPerformed
-        createSchedule();                
+        createSchedule();        
     }//GEN-LAST:event_createScheduleButtonActionPerformed
 
     private void startGameButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startGameButtonActionPerformed
@@ -377,7 +399,14 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
     }//GEN-LAST:event_startGameButtonActionPerformed
 
     private void stopGameButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopGameButtonActionPerformed
-        currentSearchTask.stop();
+        if (currentSearchTask!=null) {
+            currentSearchTask.stop();
+            currentGame = null;
+        } else {
+            currentGame = null;
+            updateGUI();
+        }
+        
     }//GEN-LAST:event_stopGameButtonActionPerformed
 
     
@@ -391,11 +420,13 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
     private JPanel gamesPanel;
     private JTable gamesTable;
     private JScrollPane jScrollPane2;
-    private JLabel numberOfPiecesLabel;
+    private JPanel rankingPanel;
     private JTable rankingTable;
     private JButton startGameButton;
+    protected JLabel statusLabel;
     private JButton stopGameButton;
     private JTabbedPane tabbedPane;
+    private JSlider timeSlider;
     private JLabel whiteLabel;
     private JPanel whitePanel;
     private JLabel whiteValueLabel;
@@ -404,15 +435,16 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
    
 
     //<editor-fold defaultstate="collapsed" desc="game play">
-
     /**
      *
      * @param game
      */
-        public void startGame(Game game) {
+    public void startGame(Game game) {
+        currentGame = game;
+        
         // initialize game state
-        S gs = gameGUI.getGameState(); 
-        gs.reset(); // sets to inital game state
+        notifyCompetitionListeners(game, true); // notify of start of game
+        S gs = gameGUI.getCurrentGameState(); 
         
         // fill player labels
         fillPlayerLabel(game.first, whiteLabel);
@@ -421,19 +453,20 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         // start the game
         continueGame(game, gs);
     }
+        
     SearchTask currentSearchTask=null;
     private void continueGame(final Game game, final S gs) {
-        updateGUI(game,gs);
-        if (gs.isEndState()) {
-            finishGame(game);
+        if ((currentGame==null) || gs.isEndState()) {
+            finishGame(game,gs);
         } else {
+            updateGUI(game,gs); updateGUI();
             Player currentPlayer;
             if (gs.isWhiteToMove())
                 currentPlayer  =  game.first;
             else currentPlayer = game.second;
             
             if (currentPlayer.isHuman()) {
-                getHumanMove(game, gs);
+                //getHumanMove(game, gs); done via GameGUIListener
                 currentSearchTask=null;
             } else {
                 currentSearchTask = getComputerMove(currentPlayer, gs, game);
@@ -441,60 +474,50 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         }
     }
     
-    private void finishGame(final Game game) {
+    private void finishGame(final Game game, final S gs) {
+        currentGame = null;
+        updateGUI(); updateGUI(game,gs);
         // for now, give a random result
         Result[] values = Result.values();
         int pick = new Random().nextInt(values.length - 1);
-        game.setResult(Result.values()[pick]);
+        if (game!=null) game.setResult(Result.values()[pick]);
         updateRanking();
+        notifyCompetitionListeners(game,false); // notify of end of game
     }
     
     private SearchTask getComputerMove(Player currentPlayer, final S gs, final Game game) {
         SearchTask<M, Long, S> searchTask;
         final Timer timer = new Timer();
-        final int maxTime = 5; // seconds
+        final int maxTime = timeSlider.getValue();
         searchTask = new TimedSearchTask<M, Long, S>(currentPlayer, gs, maxTime) {
+            private long MIN_DELAY=1500; // minimum time for a move 1500 milliseconds
             @Override
             public void done(M m) {
                 timer.stop();
                 
-                // sleep at least 1000ms before doing the move on the board
+                // sleep at least MIN DELAY ms before doing the move on the board
                 long dt = timer.elapsedTimeInMilliSeconds();
-                if (dt <1500) {
-                    sleep(1000-dt);
+                //System.err.println("dt = " + dt + "/" + maxTime+"\n\n");
+                if (dt <MIN_DELAY) {
+                    sleep(MIN_DELAY-dt);
                 }
                 
                 // apply move in the current game state
                 if (gs.getMoves().contains(m)) {
-                    gs.doMove(m);
+                    //gs.doMove(m);
+                    notifyCompetitionListeners(m); // notify of next AI move
+                    //gameGUI.animateMove(m);
                 } else {
                     LOG.log(Level.SEVERE, "illegal move {0}\nin state:\n {1}", new Object[]{m, gs.toString()});
                 }
-                
-                // add move to moves list
-//                moves.add(m);
-//
-//                System.err.println("" + m.getNotation() + "\n" + gs);
 
                 // recurse
-                continueGame(game,gs);                               
+                continueGame(game,gs); 
             }
         };
         timer.start();
         searchTask.execute();
         return searchTask;
-    }
-
-    private void getHumanMove(final Game game, final S gs) {
-        
-        gameGUI.enableASingleHumanMove(new HumanMoveListener<M>() {
-            @Override
-            public void onMove(M m) {
-                S gs = gameGUI.getGameState();
-                gs.doMove(m);
-                continueGame(game,gs);
-            }
-        });
     }
     //</editor-fold>
      
@@ -512,11 +535,14 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
     
     //<editor-fold defaultstate="collapsed" desc="update CompetitionGUI methods">
     private void updateGUI(Game game, S gs) {
-        boolean whiteIsHuman = game.first.isHuman();
-        boolean blackIsHuman = game.second.isHuman();
-        show(gs);
-        whiteValueLabel.setText(whiteIsHuman?"":""+game.first.getValue());
-        blackValueLabel.setText(blackIsHuman?"":""+game.second.getValue());
+        if (game!=null) {
+            boolean whiteIsHuman = game.first.isHuman();
+            boolean blackIsHuman = game.second.isHuman();
+            whiteValueLabel.setText(whiteIsHuman?"":""+game.first.getValue());
+            blackValueLabel.setText(blackIsHuman?"":""+game.second.getValue());
+        }
+        gameGUI.show(gs);
+        updateWhoIsToMove(gs);
     }
     
     private void updateRanking() {
@@ -589,8 +615,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         });
     }
     
-    private void show(S ds) {
-        gameGUI.show(ds);
+    protected void updateWhoIsToMove(S ds) {
         boolean w2m = ds.isWhiteToMove();
         whiteLabel.setEnabled(w2m);
         blackLabel.setEnabled(!w2m);
@@ -619,9 +644,18 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
             row = row + 1;
         }
         gamesTable.setModel(model);
+        if (model.getRowCount()>0) {
+            gamesTable.getSelectionModel().setSelectionInterval(0, 0);
+        }
     }
 //</editor-fold>
 
+    
+    private void updateGUI() {
+        boolean scheduledGames = gamesTable.getModel().getRowCount()>0;
+            startGameButton.setEnabled(scheduledGames && currentGame==null);
+            stopGameButton.setEnabled(scheduledGames && currentGame!=null);
+    }
     //<editor-fold defaultstate="collapsed" desc="auxiliary methods">
     
    
@@ -641,5 +675,45 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
             fillTable(schedule);
             updateRanking();
         }
-    }    
+        updateGUI();
+    }   
+    
+    //<editor-fold defaultstate="collapsed" desc="CompetitionListener handling">
+    public void add(CompetitionListener<M> l) {
+        listeners.add(l);
+    }
+    
+    public void remove(CompetitionListener<M> l) {
+        listeners.remove(l);
+    }
+    
+    private void notifyCompetitionListeners(M m) {
+        for(CompetitionListener<M> l: listeners) {
+            l.onAIMove(m);
+        }
+    }
+    private void notifyCompetitionListeners(Game g, boolean start) {
+        for(CompetitionListener<M> l : listeners) {
+            if (start) {
+                l.onStartGame(g);
+            } else {
+                l.onStopGame(g);
+            }
+        }
+    }
+//</editor-fold>
+
+    @Override
+    public void onHumanMove(M m) {
+        continueGame(currentGame,gameGUI.getCurrentGameState());
+    }
+
+    @Override
+    public void onNewGameState(S s) {
+        if (currentGame==null) {
+            boolean w2m = s.isWhiteToMove();
+            whiteLabel.setEnabled(w2m);
+            blackLabel.setEnabled(!w2m);
+        }
+    }
 }

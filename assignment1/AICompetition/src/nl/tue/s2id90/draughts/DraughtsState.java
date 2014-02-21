@@ -4,9 +4,8 @@
  */
 package nl.tue.s2id90.draughts;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import nl.tue.s2id90.game.GameState;
 import org10x10.dam.game.BoardState;
 import org10x10.dam.game.Move;
@@ -70,18 +69,26 @@ public class DraughtsState implements GameState<Move> {
      **/
     final public static int WHITEFIELD = 5;
     
-    private final BoardState bs = new BoardState(10,10);
+    private final BoardState bs;
     private final MoveGenerator moveGenerator = MoveGeneratorFactory.createMoveGeneratorInternational();
     private List<Move> moves=null;
-    private Map<Integer,Piece> map = new HashMap<>();
     
     /**
-     *
+     * creates an initial  draughts state.
      */
     public DraughtsState() {
+        bs = new BoardState(10,10);
         bs.setBegin();
-        init_map();
     }
+    
+    private DraughtsState(DraughtsState ds) {
+        this(ds.bs);
+    }
+    
+    /** creates a draughts state with a copy of the given BoardState. **/
+    DraughtsState(BoardState bs) {
+        this.bs = (BoardState) bs.clone();
+    }  
     
     /**
      *
@@ -90,7 +97,7 @@ public class DraughtsState implements GameState<Move> {
     @Override
     public List<Move> getMoves() {
         if (moves==null)
-            return moveGenerator.generateMoves(bs);
+            return moves=new ArrayList(moveGenerator.generateMoves(bs));
         return moves;
     }
 
@@ -111,7 +118,7 @@ public class DraughtsState implements GameState<Move> {
      */
     @Override
     public void doMove(Move m) {
-        moves = null;
+        moves = null;      // invalidate moves
         bs.moveForward(m);
     }
 
@@ -121,7 +128,7 @@ public class DraughtsState implements GameState<Move> {
      */
     @Override
     public void undoMove(Move m) {
-        moves=null;
+        moves=null;             // invalidate cached moves
         bs.moveBackward(m);
     }
     
@@ -182,20 +189,12 @@ public class DraughtsState implements GameState<Move> {
      */
     @Override
     public void reset() {
+        moves=null;       // invalidate cached moves
         bs.setBegin();
     }
-    
-    private void init_map() {
-          map.put(BLACKKING, Piece.BLACK_KING);
-          map.put(WHITEKING, Piece.WHITE_KING);
-          map.put(BLACKPIECE, Piece.BLACK);
-          map.put(WHITEPIECE, Piece.WHITE);
-    }
-    
-    private Piece convert(Integer oldValue) {
-        if (oldValue==null||oldValue==0) return null;
-        else {
-            return map.get(oldValue);
-        }
+
+    @Override
+    public DraughtsState clone() {
+        return new DraughtsState(this);
     }
 }
