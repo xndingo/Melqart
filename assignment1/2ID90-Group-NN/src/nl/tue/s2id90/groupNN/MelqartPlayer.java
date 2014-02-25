@@ -16,6 +16,10 @@ import org10x10.dam.game.Move;
  */
 public class MelqartPlayer extends DraughtsPlayer {
 
+    public MelqartPlayer() {
+        super(MelqartPlayer.class.getResource("resources/squirtle.jpg"));
+    }
+    
     /**
      * Returns the amount of pieces that are on the board given a game state
      * {@code gs}
