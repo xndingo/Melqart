@@ -16,6 +16,9 @@ import org10x10.dam.game.Move;
  */
 public class MelqartPlayer extends DraughtsPlayer {
 
+    private Move move = null;
+    private int value = 0;
+    
     /**
      * Returns the amount of pieces that are on the board given a game state
      * {@code gs}
@@ -43,53 +46,67 @@ public class MelqartPlayer extends DraughtsPlayer {
     }
 
 int alphaBeta (GameNode node, int depth, int alpha, int beta, boolean maximizingPlayer){
-        GameState state = node.getState();
+        DraughtsState state = node.getState();
         List<Move> moves = state.getMoves();
         if (depth == 0 || state.isEndState()) {
-            return node.getValue();
+            return node.getValue(state);
         } 
         if (maximizingPlayer) {
             for (Move move : moves){
                 state.doMove(move);
                 // recursive call
-                alpha = max(alpha, alphaBeta((GameNode) state, depth-1, alpha, beta, false));
+                System.out.println("Clone");
+                GameNode newNode = new GameNode(state.clone());
+                System.out.println("End clone");
+                alpha = max(alpha, alphaBeta(newNode, depth-1, alpha, beta, false));
                 if (beta <= alpha) {
                     break; //b cut off
                 }
                 state.undoMove(move);                                
             }
-            node.setBestMove(alpha);
-            return alpha;           
+            //node.setBestMove(alpha);
+            this.move = move;
+            return alpha;
         }
         else { //minimizingPlayer
             for (Move move : moves){
                 state.doMove(move);
                 // recursive call
-                beta = min(beta, alphaBeta((GameNode) state, depth-1, alpha, beta, true));
+                System.out.println("Clone");
+                GameNode newNode = new GameNode(state.clone());
+                System.out.println("End clone");
+                beta = min(beta, alphaBeta(newNode, depth-1, alpha, beta, true));
                 if (beta <= alpha) {
                     break; //a cut off
                 }
                 state.undoMove(move);                     
             }
-            node.setBestMove(beta);
+            //node.setBestMove(beta);
+            this.move = move;
             return beta; 
         }
 }
 
     @Override
-    public Move getMove(DraughtsState s) {
+    public Move getMove(DraughtsState ds) {
+        if (ds == null){
+            throw new IllegalArgumentException("blub");
+        } // Not ze problem. le baguette
         System.out.println("getmoves");
-        List<Move> moves = s.getMoves();
+        List<Move> moves = ds.getMoves();
         System.out.println("gamenode");
-        GameNode node = new GameNode(s.clone());
+        GameNode node = new GameNode(ds.clone());
         System.out.println("alphaBeta");
-        alphaBeta(node, 1, 0, 0, true);
-        System.out.println("return");
-        return moves.get(0);
+        this.value = alphaBeta(node, 1, 0, 0, true);
+        if (this.move == null){
+            throw new IllegalArgumentException("blub2");
+        } // Not ze problem. le baguette
+        System.out.println("The return: extension, remastered");
+        return this.move;
     }
     
     @Override
     public Integer getValue() {
-        return 1337;
+        return value;
     }
 }

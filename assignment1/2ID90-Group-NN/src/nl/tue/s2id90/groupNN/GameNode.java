@@ -9,11 +9,14 @@ import org10x10.dam.game.Move;
  * @author Jeroen van Hoof
  */
 public class GameNode {
-    private DraughtsState gs;
+    private DraughtsState ds;
     
     // Constructor
-    public GameNode(DraughtsState gs) {
-        this.gs = new DraughtsState();
+    public GameNode(GameState gs) {
+         if (gs == null){
+            throw new IllegalArgumentException("gs in gamenode");
+        }
+        this.ds = ds.clone();
     }
        
     /**
@@ -30,7 +33,7 @@ public class GameNode {
      * @return 
      */
     public DraughtsState getState() {
-        return this.gs;
+        return this.ds;
     }
     
     /**
@@ -41,10 +44,13 @@ public class GameNode {
         throw new UnsupportedOperationException("Not supported yet."); 
         
     }
-    
-    
-    public Integer getValue() {
-        return evaluate(gs);
+
+    /**
+     *
+     * @return
+     */
+    public Integer getValue(DraughtsState ds) {
+        return evaluate(ds);
     }
 
     // Material
@@ -64,21 +70,25 @@ public class GameNode {
     final int DEF = 8;        // Number of defended draughts
 
     /**
-     * Evaluates the current DraughtsState.
+     * Evaluates the current GameState.
      *
-     * @param ds The DraughtsState.
+     * @param ds The GameState.
      * @return The value of the current state.
      */
     public static int evaluate(DraughtsState ds) {
+         if (ds == null){
+            throw new IllegalArgumentException("ds in evaluate");
+        }
         int total = 0;
 
         // White or black has to move.
         boolean isWhite = ds.isWhiteToMove();
         // Possible moves.
-        int moves = ds.getMoves().size();
+//        int moves = ds.getMoves().size();
 
-        for (int c = 0; c <= 10; c++) {
-            for (int r = 0; r <= 10; r++) {
+        System.out.println("problem here?");
+        for (int c = 0; c != 10; c++) {
+            for (int r = 0; r != 10; r++) {
                 total += addValue(r, c, isWhite, ds);
             }
         }
