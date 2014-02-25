@@ -9,14 +9,15 @@ import org10x10.dam.game.Move;
  * @author Jeroen van Hoof
  */
 public class GameNode {
-    private DraughtsState ds;
+    public static DraughtsState ds;
     
     // Constructor
-    public GameNode(GameState gs) {
-         if (gs == null){
+    public GameNode(DraughtsState ds) {
+        System.out.println("Creating node.");
+         if (ds == null){
             throw new IllegalArgumentException("gs in gamenode");
         }
-        this.ds = ds.clone();
+        GameNode.ds = ds.clone();
     }
        
     /**
@@ -33,7 +34,7 @@ public class GameNode {
      * @return 
      */
     public DraughtsState getState() {
-        return this.ds;
+        return GameNode.ds;
     }
     
     /**

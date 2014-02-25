@@ -16,7 +16,7 @@ import org10x10.dam.game.Move;
  */
 public class MelqartPlayer extends DraughtsPlayer {
 
-    private Move move = null;
+    private Move bestMove = null;
     private int value = 0;
     
     /**
@@ -60,12 +60,13 @@ int alphaBeta (GameNode node, int depth, int alpha, int beta, boolean maximizing
                 System.out.println("End clone");
                 alpha = max(alpha, alphaBeta(newNode, depth-1, alpha, beta, false));
                 if (beta <= alpha) {
+                    this.bestMove = move;
                     break; //b cut off
                 }
                 state.undoMove(move);                                
             }
             //node.setBestMove(alpha);
-            this.move = move;
+            
             return alpha;
         }
         else { //minimizingPlayer
@@ -77,12 +78,13 @@ int alphaBeta (GameNode node, int depth, int alpha, int beta, boolean maximizing
                 System.out.println("End clone");
                 beta = min(beta, alphaBeta(newNode, depth-1, alpha, beta, true));
                 if (beta <= alpha) {
+                    this.bestMove = move;
                     break; //a cut off
                 }
                 state.undoMove(move);                     
             }
             //node.setBestMove(beta);
-            this.move = move;
+            
             return beta; 
         }
 }
@@ -97,12 +99,12 @@ int alphaBeta (GameNode node, int depth, int alpha, int beta, boolean maximizing
         System.out.println("gamenode");
         GameNode node = new GameNode(ds.clone());
         System.out.println("alphaBeta");
-        this.value = alphaBeta(node, 1, 0, 0, true);
-        if (this.move == null){
+        this.value = alphaBeta(node, 1, 0, 0, ds.isWhiteToMove());
+        if (this.bestMove == null){
             throw new IllegalArgumentException("blub2");
         } // Not ze problem. le baguette
         System.out.println("The return: extension, remastered");
-        return this.move;
+        return this.bestMove;
     }
     
     @Override
