@@ -86,7 +86,11 @@ public class MelqartPlayer extends DraughtsPlayer {
                 bestMove = move;
             }
         }
+<<<<<<< HEAD
         System.out.println("MelqartPlayer count:" + count);
+=======
+        System.out.println("Count:" + count);
+>>>>>>> e3d0ef84be024ac61e72e2de77e53afb68d02f14
         count = 0;
         return bestMove;
     }
