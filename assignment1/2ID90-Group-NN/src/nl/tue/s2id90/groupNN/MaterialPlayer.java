@@ -16,14 +16,14 @@ import org10x10.dam.game.Move;
  * @author Jeroen van Hoof
  * @author Theodoros Margomenos
  */
-public class MelqartPlayer extends DraughtsPlayer {
+public class MaterialPlayer extends DraughtsPlayer {
     private final int maxDepth = 6;
     private int value;
     private int count;
     
     
-    public MelqartPlayer() {
-        super(MelqartPlayer.class.getResource("resources/squirtle.jpg"));
+    public MaterialPlayer() {
+        super(MaterialPlayer.class.getResource("resources/vegeta.JPG"));
     }
     
     /**
@@ -52,7 +52,7 @@ public class MelqartPlayer extends DraughtsPlayer {
         stopped = true;
     }
    
-    int alphaBeta(GameNode node, int alpha, int beta, int player, int depth) 
+    int alphaBeta(GameNodeMaterial node, int alpha, int beta, int player, int depth) 
             throws Exception{
         count++;
         DraughtsState state = node.getState();
@@ -61,7 +61,7 @@ public class MelqartPlayer extends DraughtsPlayer {
         }
         for (Move move : state.getMoves()){
             state.doMove(move);
-            alpha = max(alpha, -alphaBeta(new GameNode(state.clone()), 
+            alpha = max(alpha, -alphaBeta(new GameNodeMaterial(state.clone()), 
                     -beta, -alpha, -(player), depth - 1));
             state.undoMove(move);
             if (beta >= alpha){
@@ -71,14 +71,14 @@ public class MelqartPlayer extends DraughtsPlayer {
         return alpha;
     }
     
-    Move rootAlphaBeta(GameNode node, int alpha, int beta, int player, int depth) 
+    Move rootAlphaBeta(GameNodeMaterial node, int alpha, int beta, int player, int depth) 
             throws Exception {
         Move bestMove = null;
         DraughtsState state = node.getState();
         int maxEval = -10000;
         for (Move move : state.getMoves()){
             state.doMove(move);
-            alpha = max(alpha, -alphaBeta(new GameNode(state.clone()), 
+            alpha = max(alpha, -alphaBeta(new GameNodeMaterial(state.clone()), 
                     -beta, -alpha, -(player), depth - 1));
             state.undoMove(move);
             if (alpha > maxEval){
@@ -86,7 +86,7 @@ public class MelqartPlayer extends DraughtsPlayer {
                 bestMove = move;
             }
         }
-        System.out.println("MelqartPlayer count:" + count);
+        System.out.println("MaterialPlayer count:" + count);
         count = 0;
         return bestMove;
     }
@@ -95,11 +95,11 @@ public class MelqartPlayer extends DraughtsPlayer {
     public Move getMove(DraughtsState ds) {
         try {
             List<Move> moves = ds.getMoves();
-            GameNode node = new GameNode(ds.clone());
+            GameNodeMaterial node = new GameNodeMaterial(ds.clone());
             
             return rootAlphaBeta(node, -10000, 10000, 1, this.maxDepth);
         } catch (Exception ex) {
-            Logger.getLogger(MelqartPlayer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MaterialPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return null;

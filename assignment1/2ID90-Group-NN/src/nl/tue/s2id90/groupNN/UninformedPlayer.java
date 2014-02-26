@@ -20,7 +20,7 @@ import org10x10.dam.game.Move;
 public class UninformedPlayer extends DraughtsPlayer {
 
     public UninformedPlayer() {
-        super(UninformedPlayer.class.getResource("resources/vegeta.JPG"));
+        super(UninformedPlayer.class.getResource("resources/smiley.png"));
     }
     @Override
     /** @return a random move **/

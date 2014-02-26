@@ -13,7 +13,6 @@ public class GameNode {
     
     // Constructor
     public GameNode(DraughtsState ds) {
-        System.out.println("Creating node.");
          if (ds == null){
             throw new IllegalArgumentException("gs in gamenode");
         }
@@ -87,7 +86,6 @@ public class GameNode {
         // Possible moves.
 //        int moves = ds.getMoves().size();
 
-        System.out.println("problem here?");
         for (int c = 0; c != 10; c++) {
             for (int r = 0; r != 10; r++) {
                 total += addValue(r, c, isWhite, ds);
