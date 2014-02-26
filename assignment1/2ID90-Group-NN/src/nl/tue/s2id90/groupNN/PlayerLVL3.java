@@ -16,14 +16,14 @@ import org10x10.dam.game.Move;
  * @author Jeroen van Hoof
  * @author Theodoros Margomenos
  */
-public class MaterialPlayer extends DraughtsPlayer {
+public class PlayerLVL3 extends DraughtsPlayer {
     private final int maxDepth = 6;
     private int value;
     private int count;
     
     
-    public MaterialPlayer() {
-        super(MaterialPlayer.class.getResource("resources/vegeta.JPG"));
+    public PlayerLVL3() {
+        super(PlayerLVL3.class.getResource("resources/squirtle.jpg"));
     }
     
     /**
@@ -52,13 +52,8 @@ public class MaterialPlayer extends DraughtsPlayer {
         stopped = true;
     }
    
-    int alphaBeta(GameNodeMaterial node, int alpha, int beta, int player, int depth) 
-            throws RuntimeException, Exception{
-        if (stopped) {
-            stopped = false;
-            //throw new RuntimeException("Stopped Alpha-beta.");
-            System.out.println("I don't care :(");
-        }
+    int alphaBeta(NodeLVL3 node, int alpha, int beta, int player, int depth) 
+            throws Exception{
         count++;
         DraughtsState state = node.getState();
         if (depth == 0){
@@ -66,7 +61,7 @@ public class MaterialPlayer extends DraughtsPlayer {
         }
         for (Move move : state.getMoves()){
             state.doMove(move);
-            alpha = max(alpha, -alphaBeta(new GameNodeMaterial(state.clone()), 
+            alpha = max(alpha, -alphaBeta(new NodeLVL3(state.clone()), 
                     -beta, -alpha, -(player), depth - 1));
             state.undoMove(move);
             if (beta >= alpha){
@@ -76,18 +71,21 @@ public class MaterialPlayer extends DraughtsPlayer {
         return alpha;
     }
     
-    Move rootAlphaBeta(GameNodeMaterial node, int alpha, int beta, int player, int depth) 
+    Move rootAlphaBeta(NodeLVL3 node, int alpha, int beta, int player, int depth) 
             throws Exception {
         Move bestMove = null;
         this.value = -10000;
         DraughtsState state = node.getState();
         List<Move> moves = state.getMoves();
-        if (moves.size() == 0){
+        
+        // When only one move is possible, immediately choose that one.
+        if (moves.size() == 1){
             return moves.get(0);
         }
-        for (Move move : moves){        
+        
+        for (Move move : moves){
             state.doMove(move);
-            alpha = max(alpha, -alphaBeta(new GameNodeMaterial(state.clone()), 
+            alpha = max(alpha, -alphaBeta(new NodeLVL3(state.clone()), 
                     -beta, -alpha, -(player), depth - 1));
             state.undoMove(move);
             if (alpha > this.value){
@@ -95,8 +93,19 @@ public class MaterialPlayer extends DraughtsPlayer {
                 bestMove = move;
             }
         }
-        System.out.println("MaterialPlayer count:" + count);
+        System.out.println("PlayerLVL3 count:" + count);
         count = 0;
+        if (bestMove == null){
+            
+            // When no move is found and depth equals two, choose a random one.
+            if (depth <= 2){
+                Collections.shuffle(moves);
+                return moves.get(0);
+            }
+            
+            // Lower the depth when no best move is found.
+            return rootAlphaBeta(node, alpha, beta, player, depth - 1);
+        }
         return bestMove;
     }
 
@@ -104,11 +113,11 @@ public class MaterialPlayer extends DraughtsPlayer {
     public Move getMove(DraughtsState ds) {
         try {
             List<Move> moves = ds.getMoves();
-            GameNodeMaterial node = new GameNodeMaterial(ds.clone());
+            NodeLVL3 node = new NodeLVL3(ds.clone());
             
             return rootAlphaBeta(node, -10000, 10000, 1, this.maxDepth);
         } catch (Exception ex) {
-            Logger.getLogger(MaterialPlayer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PlayerLVL3.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return null;

@@ -18,6 +18,11 @@ public class MyDraughtsPlugin extends DraughtsPlugin {
         // During the final competition you should make only your 
         // best player available. For testing it might be handy
         // to make more than one player available.
-        super(new MaterialPlayer(), new MelqartPlayer(), new OptimisticPlayer());
+        super(
+                new PlayerLVL0(), 
+                new PlayerLVL1(), 
+                new PlayerLVL2(), 
+                new PlayerLVL3()
+        );
     }
 }

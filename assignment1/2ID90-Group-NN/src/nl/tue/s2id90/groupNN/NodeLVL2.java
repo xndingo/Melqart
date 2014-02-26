@@ -8,15 +8,15 @@ import org10x10.dam.game.Move;
  * @author Theodoros Margomenos
  * @author Jeroen van Hoof
  */
-public class GameNode {
+public class NodeLVL2 {
     public static DraughtsState ds;
     
     // Constructor
-    public GameNode(DraughtsState ds) {
+    public NodeLVL2(DraughtsState ds) {
          if (ds == null){
             throw new IllegalArgumentException("gs in gamenode");
         }
-        GameNode.ds = ds.clone();
+        NodeLVL2.ds = ds.clone();
     }
        
     /**
@@ -33,7 +33,7 @@ public class GameNode {
      * @return 
      */
     public DraughtsState getState() {
-        return GameNode.ds;
+        return NodeLVL2.ds;
     }
     
     /**
@@ -103,16 +103,20 @@ public class GameNode {
             return 0;
         }
         if (piece == DraughtsState.WHITEKING) {
-            return 50 + KING;
+            return 50 
+                    + KING;
         }
         if (piece == DraughtsState.WHITEPIECE){
-            return calcPlayground(r, c, true) + DRAUGHT;
+            return calcPlayground(r, c, true) 
+                    + DRAUGHT;
         }
         if (piece == DraughtsState.BLACKKING) {
-            return  -(50 + KING);
+            return  -50 
+                    - KING;
         }
         if (piece == DraughtsState.BLACKPIECE){
-            return -(calcPlayground(r, c, false) + DRAUGHT);
+            return -calcPlayground(r, c, false) 
+                    - DRAUGHT;
         }
         return 0;
     }
@@ -146,6 +150,5 @@ public class GameNode {
 
         return bigTriangle - triangleR - triangleL;
 
-    }
-    
+    }    
 }

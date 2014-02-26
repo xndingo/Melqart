@@ -16,14 +16,14 @@ import org10x10.dam.game.Move;
  * @author Jeroen van Hoof
  * @author Theodoros Margomenos
  */
-public class MelqartPlayer extends DraughtsPlayer {
+public class PlayerLVL1 extends DraughtsPlayer {
     private final int maxDepth = 6;
     private int value;
     private int count;
     
     
-    public MelqartPlayer() {
-        super(MelqartPlayer.class.getResource("resources/squirtle.jpg"));
+    public PlayerLVL1() {
+        super(PlayerLVL1.class.getResource("resources/vegeta.JPG"));
     }
     
     /**
@@ -52,8 +52,13 @@ public class MelqartPlayer extends DraughtsPlayer {
         stopped = true;
     }
    
-    int alphaBeta(GameNode node, int alpha, int beta, int player, int depth) 
-            throws Exception{
+    int alphaBeta(NodeLVL1 node, int alpha, int beta, int player, int depth) 
+            throws RuntimeException, Exception{
+        if (stopped) {
+            stopped = false;
+            //throw new RuntimeException("Stopped Alpha-beta.");
+            System.out.println("I don't care :(");
+        }
         count++;
         DraughtsState state = node.getState();
         if (depth == 0){
@@ -61,7 +66,7 @@ public class MelqartPlayer extends DraughtsPlayer {
         }
         for (Move move : state.getMoves()){
             state.doMove(move);
-            alpha = max(alpha, -alphaBeta(new GameNode(state.clone()), 
+            alpha = max(alpha, -alphaBeta(new NodeLVL1(state.clone()), 
                     -beta, -alpha, -(player), depth - 1));
             state.undoMove(move);
             if (beta >= alpha){
@@ -71,7 +76,7 @@ public class MelqartPlayer extends DraughtsPlayer {
         return alpha;
     }
     
-    Move rootAlphaBeta(GameNode node, int alpha, int beta, int player, int depth) 
+    Move rootAlphaBeta(NodeLVL1 node, int alpha, int beta, int player, int depth) 
             throws Exception {
         Move bestMove = null;
         this.value = -10000;
@@ -80,9 +85,9 @@ public class MelqartPlayer extends DraughtsPlayer {
         if (moves.size() == 0){
             return moves.get(0);
         }
-        for (Move move : moves){
+        for (Move move : moves){        
             state.doMove(move);
-            alpha = max(alpha, -alphaBeta(new GameNode(state.clone()), 
+            alpha = max(alpha, -alphaBeta(new NodeLVL1(state.clone()), 
                     -beta, -alpha, -(player), depth - 1));
             state.undoMove(move);
             if (alpha > this.value){
@@ -90,8 +95,12 @@ public class MelqartPlayer extends DraughtsPlayer {
                 bestMove = move;
             }
         }
-        System.out.println("MelqartPlayer count:" + count);
+        System.out.println("PlayerLVL1 count:" + count);
         count = 0;
+        if (bestMove == null){
+            Collections.shuffle(moves);
+            return moves.get(0);
+        }
         return bestMove;
     }
 
@@ -99,11 +108,11 @@ public class MelqartPlayer extends DraughtsPlayer {
     public Move getMove(DraughtsState ds) {
         try {
             List<Move> moves = ds.getMoves();
-            GameNode node = new GameNode(ds.clone());
+            NodeLVL1 node = new NodeLVL1(ds.clone());
             
             return rootAlphaBeta(node, -10000, 10000, 1, this.maxDepth);
         } catch (Exception ex) {
-            Logger.getLogger(MelqartPlayer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PlayerLVL1.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return null;

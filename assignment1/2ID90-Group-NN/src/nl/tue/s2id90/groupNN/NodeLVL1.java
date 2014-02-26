@@ -8,16 +8,16 @@ import org10x10.dam.game.Move;
  * @author Theodoros Margomenos
  * @author Jeroen van Hoof
  */
-public class GameNodeMaterial {
+public class NodeLVL1 {
     public static DraughtsState ds;
     
     // Constructor
-    public GameNodeMaterial(DraughtsState ds) {
+    public NodeLVL1(DraughtsState ds) {
 
          if (ds == null){
             throw new IllegalArgumentException("gs in gamenode");
         }
-        GameNodeMaterial.ds = ds.clone();
+        NodeLVL1.ds = ds.clone();
     }
        
     /**
@@ -34,7 +34,7 @@ public class GameNodeMaterial {
      * @return 
      */
     public DraughtsState getState() {
-        return GameNodeMaterial.ds;
+        return NodeLVL1.ds;
     }
     
     /**
