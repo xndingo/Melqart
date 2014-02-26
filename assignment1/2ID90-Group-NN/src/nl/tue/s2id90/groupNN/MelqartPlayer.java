@@ -74,15 +74,19 @@ public class MelqartPlayer extends DraughtsPlayer {
     Move rootAlphaBeta(GameNode node, int alpha, int beta, int player, int depth) 
             throws Exception {
         Move bestMove = null;
+        this.value = -10000;
         DraughtsState state = node.getState();
-        int maxEval = -10000;
-        for (Move move : state.getMoves()){
+        List<Move> moves = state.getMoves();
+        if (moves.size() == 0){
+            return moves.get(0);
+        }
+        for (Move move : moves){
             state.doMove(move);
             alpha = max(alpha, -alphaBeta(new GameNode(state.clone()), 
                     -beta, -alpha, -(player), depth - 1));
             state.undoMove(move);
-            if (alpha > maxEval){
-                maxEval = alpha;
+            if (alpha > this.value){
+                this.value = alpha;
                 bestMove = move;
             }
         }

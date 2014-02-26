@@ -54,8 +54,8 @@ public class GameNode {
     }
 
     // Material
-    final static int KING = 30;      // Number of kings
-    final static int DRAUGHT = 10;   // Number of draughts
+    final static int KING = 300;      // Number of kings
+    final static int DRAUGHT = 100;   // Number of draughts
 
     // Infastructure
     final double PLAY = 0.4;  // Playground
@@ -88,37 +88,37 @@ public class GameNode {
 
         for (int c = 0; c != 10; c++) {
             for (int r = 0; r != 10; r++) {
-                total += addValue(r, c, isWhite, ds);
+                total += addValue(r, c, ds);
             }
         }
-
+        if (!isWhite) {
+            total = -total;
+        }
         return total;
     }
 
-    public static int addValue(int r, int c, boolean isWhite, DraughtsState ds) {
+    public static int addValue(int r, int c, DraughtsState ds) {
         int piece = ds.getPiece(r, c);
-        if (piece != DraughtsState.WHITEFIELD
-                && piece != DraughtsState.EMPTY) {
-            if (isWhite) {
-                if (piece == DraughtsState.WHITEKING) {
-                    return 50 + KING;
-                } else {
-                    return calcPlayground(r, c, true) + DRAUGHT;
-                }
-            } else {
-                if (piece == DraughtsState.BLACKKING) {
-                    return 50 + KING;
-                } else {
-                    return calcPlayground(r, c, false) + DRAUGHT;
-                }
-            }
-
-        } else {
+        if (piece == DraughtsState.WHITEFIELD || piece == DraughtsState.EMPTY) {
             return 0;
         }
+        if (piece == DraughtsState.WHITEKING) {
+            return 50 + KING;
+        }
+        if (piece == DraughtsState.WHITEPIECE){
+            return calcPlayground(r, c, true) + DRAUGHT;
+        }
+        if (piece == DraughtsState.BLACKKING) {
+            return  -(50 + KING);
+        }
+        if (piece == DraughtsState.BLACKPIECE){
+            return -(calcPlayground(r, c, false) + DRAUGHT);
+        }
+        return 0;
     }
 
     public static int calcPlayground(int y, int x, boolean white) {
+        x++; y++;
         int triangleR = 0, triangleL = 0;
 
         // Flip board for black
