@@ -53,7 +53,11 @@ public class MaterialPlayer extends DraughtsPlayer {
     }
    
     int alphaBeta(GameNodeMaterial node, int alpha, int beta, int player, int depth) 
-            throws Exception{
+            throws RuntimeException, Exception{
+        if (stopped) {
+            stopped = false;
+            throw new RuntimeException("Stopped Alpha-beta.");
+        }
         count++;
         DraughtsState state = node.getState();
         if (depth == 0){
