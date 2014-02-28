@@ -1,20 +1,19 @@
 package nl.tue.s2id90.groupNN;
 
-import java.lang.reflect.Array;
 import nl.tue.s2id90.draughts.DraughtsState;
-import nl.tue.s2id90.game.GameState;
-import org10x10.dam.game.Move;
+
 
 /**
  * @author Theodoros Margomenos
  * @author Jeroen van Hoof
  */
 public class NodeLVL4 {
-    public static DraughtsState ds;
-    
+
+    private static DraughtsState ds;
+
     // Constructor
     public NodeLVL4(DraughtsState ds) {
-         if (ds == null){
+        if (ds == null) {
             throw new IllegalArgumentException("gs in gamenode");
         }
         NodeLVL4.ds = ds.clone();
@@ -50,7 +49,7 @@ public class NodeLVL4 {
      *
      * @return
      */
-    public Integer getValue(int player) {
+    public Integer getValue() {
         // Calculate the balance for white
         int total = 0;
         for (int c = 0; c != 10; c++) {
@@ -58,7 +57,12 @@ public class NodeLVL4 {
                 total += addValue(r, c);
             }
         }
-        return player * total;
+        if (ds.isWhiteToMove()){
+            System.out.println("white");
+            return total;
+        } else {
+            return -total;
+        }
     }
 
     // Material
@@ -85,26 +89,32 @@ public class NodeLVL4 {
         int blackScore = 0;
         
         if (piece == DraughtsState.WHITEKING){
-            whiteScore += 50 + KING + calcDef(r, c, false);
+            whiteScore += 50;
+            whiteScore += KING;
+            whiteScore += calcDef(r, c, true);
         }
         if (piece == DraughtsState.WHITEPIECE){
-            whiteScore += DRAUGHT + calcDef(r, c, false);
+            whiteScore += DRAUGHT;
+            whiteScore += calcDef(r, c, true);
             if (ds.getPieces().length > 20){
-            whiteScore += PLAYGROUND[r][c];   
+                whiteScore += PLAYGROUND[r][c];   
             }
         }
         if (piece == DraughtsState.BLACKKING){
-            blackScore += 50 + KING + calcDef(r, c, false);
+            blackScore += 50 ;
+            blackScore += KING;
+            blackScore += calcDef(r, c, false);
         }
         if (piece == DraughtsState.BLACKPIECE){
-            blackScore += PLAYGROUND[9-r][9-c] + DRAUGHT + calcDef(r, c, false);
+            blackScore += PLAYGROUND[9-r][9-c];
+            blackScore += DRAUGHT;
+            blackScore += calcDef(r, c, false);
             if (ds.getPieces().length > 20){
-                blackScore += PLAYGROUND[r][c];   
+                blackScore += PLAYGROUND[9-r][9-c];   
             }
         }
-//        System.out.println ("white: " + white + " black: " + black);
-        
-            return whiteScore - blackScore;
+
+        return whiteScore - blackScore;
         
     }       
     
@@ -139,8 +149,6 @@ public class NodeLVL4 {
             total += 10;
         }
         
-        
-        //System.out.println("Def:" + total);
         return total;
   
     }
