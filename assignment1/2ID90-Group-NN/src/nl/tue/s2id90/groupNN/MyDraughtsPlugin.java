@@ -22,7 +22,8 @@ public class MyDraughtsPlugin extends DraughtsPlugin {
                 new PlayerLVL0(), 
                 new PlayerLVL1(), 
                 new PlayerLVL2(), 
-                new PlayerLVL3()
+                new PlayerLVL3(),
+                new PlayerLVL4()
         );
     }
 }

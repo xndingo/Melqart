@@ -58,7 +58,6 @@ public class NodeLVL4 {
             }
         }
         if (ds.isWhiteToMove()){
-            System.out.println("white");
             return total;
         } else {
             return -total;
@@ -66,7 +65,7 @@ public class NodeLVL4 {
     }
 
     // Material
-    final static int KING = 300;      // Number of kings
+    final static int KING = 350;      // Number of kings
     final static int DRAUGHT = 100;   // Number of draughts
     
     final static int[][] PLAYGROUND = new int[][]{
@@ -89,19 +88,16 @@ public class NodeLVL4 {
         int blackScore = 0;
         
         if (piece == DraughtsState.WHITEKING){
-            whiteScore += 50;
             whiteScore += KING;
             whiteScore += calcDef(r, c, true);
         }
         if (piece == DraughtsState.WHITEPIECE){
             whiteScore += DRAUGHT;
             whiteScore += calcDef(r, c, true);
-            if (ds.getPieces().length > 20){
-                whiteScore += PLAYGROUND[r][c];   
-            }
+            whiteScore += PLAYGROUND[r][c];   
+
         }
         if (piece == DraughtsState.BLACKKING){
-            blackScore += 50 ;
             blackScore += KING;
             blackScore += calcDef(r, c, false);
         }
@@ -109,9 +105,8 @@ public class NodeLVL4 {
             blackScore += PLAYGROUND[9-r][9-c];
             blackScore += DRAUGHT;
             blackScore += calcDef(r, c, false);
-            if (ds.getPieces().length > 20){
-                blackScore += PLAYGROUND[9-r][9-c];   
-            }
+            blackScore += PLAYGROUND[9-r][9-c];   
+
         }
 
         return whiteScore - blackScore;

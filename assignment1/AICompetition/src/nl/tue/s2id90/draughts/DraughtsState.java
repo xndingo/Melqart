@@ -108,7 +108,7 @@ public class DraughtsState implements GameState<Move> {
     @Override
     public boolean isEndState() {
         if (moves==null)
-            moves = moveGenerator.generateMoves(bs);
+            moves = new ArrayList(moveGenerator.generateMoves(bs));
         return moves.isEmpty();
     }
 

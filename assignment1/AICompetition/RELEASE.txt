@@ -1,3 +1,39 @@
+------------------------------------------------------------------------------------------------------------------------
+
+Version 0.22 - 25/02/2014
+           (0) The project 2ID90-Group-NN did not change.
+           (1) Only the AICompetition project has changed; the easiest way to install this updated version
+               is, to remove the src folder of your current AICompetition project and replace it by
+               the src folder of the new version.
+
+Changelog:
+
+* the computer player did get insufficient time to compute their moves; this has been fixed. Theoretically, it is still
+  possible that the computer player receives a call to its stop method, even after it finished computing a move. This call
+  might have the effect that on the next getMove() call for this player, the stop flag is already true. This can be avoided
+  by setting the stop flag to false, as the first action in getMove().
+
+------------------------------------------------------------------------------------------------------------------------
+
+Version 0.21 - 23/02/2014
+
+           (0) The project 2ID90-Group-NN did not change.
+           (1) Only the AICompetition project has changed; the easiest way to install this updated version
+               is, to remove the src folder of your current AICompetition project and replace it by
+               the src folder of the new version.
+
+Changelog:
+
+* Bug fixed in DraughtsState.java; this bug resulted in a ConcurrentModificationException.
+
+New features:
+
+* For an exception raised in an AIPlayer now a stack trace is printed (in SearchTask.java) to assist in debugging.
+* After an illegal move a popup occurs and the game is stopped!
+
+------------------------------------------------------------------------------------------------------------------------
+
+
 Version 0.2 - 19/02/2014
 
 IMPORTANT: 

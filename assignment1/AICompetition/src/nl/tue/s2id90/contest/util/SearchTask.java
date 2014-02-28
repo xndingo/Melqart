@@ -6,6 +6,7 @@
 package nl.tue.s2id90.contest.util;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingWorker;
 import nl.tue.s2id90.game.Player;
 import nl.tue.s2id90.game.GameState;
@@ -51,6 +52,7 @@ public abstract class SearchTask<M,U,S extends GameState<M>>
                 // state, will not ruin the GUI!
                 return player.getMove((S)state.clone());
             } catch(Exception e) {
+                e.printStackTrace();
                 System.err.println(e);
                 return null;
             }
@@ -95,12 +97,7 @@ public abstract class SearchTask<M,U,S extends GameState<M>>
      *
      */
     public void stop() {
-        player.stop();            
-        while (!worker.isDone()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            }
-        }
+        // only do this once!
+        if (!worker.isDone()) player.stop();
     }
 }

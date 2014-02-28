@@ -11,6 +11,7 @@ import nl.tue.s2id90.contest.util.Identity;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
@@ -31,6 +32,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
@@ -136,7 +138,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         whiteValueLabel = new JLabel();
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle("ACT: AI Competition Tool 0.2");
+        setTitle("ACT: AI Competition Tool 0.22");
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
         boardContainerPanel.setPreferredSize(new Dimension(450, 450));
@@ -481,11 +483,12 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
         Result[] values = Result.values();
         int pick = new Random().nextInt(values.length - 1);
         if (game!=null) game.setResult(Result.values()[pick]);
+        gamesTable.setModel(gamesTable.getModel()); // redraw ????
         updateRanking();
         notifyCompetitionListeners(game,false); // notify of end of game
     }
     
-    private SearchTask getComputerMove(Player currentPlayer, final S gs, final Game game) {
+    private SearchTask getComputerMove(final Player currentPlayer, final S gs, final Game game) {
         SearchTask<M, Long, S> searchTask;
         final Timer timer = new Timer();
         final int maxTime = timeSlider.getValue();
@@ -497,7 +500,7 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
                 
                 // sleep at least MIN DELAY ms before doing the move on the board
                 long dt = timer.elapsedTimeInMilliSeconds();
-                //System.err.println("dt = " + dt + "/" + maxTime+"\n\n");
+                System.err.println("dt = " + dt + "/" + 1000*maxTime+"\n\n");
                 if (dt <MIN_DELAY) {
                     sleep(MIN_DELAY-dt);
                 }
@@ -507,12 +510,15 @@ public class CompetitionGUI<P extends Player<M,S>, Plugin extends PlayerPlugin<P
                     //gs.doMove(m);
                     notifyCompetitionListeners(m); // notify of next AI move
                     //gameGUI.animateMove(m);
+                    // recurse
+                    continueGame(game,gs); 
                 } else {
-                    LOG.log(Level.SEVERE, "illegal move {0}\nin state:\n {1}", new Object[]{m, gs.toString()});
+                    String message=("<html><center>"+(gs.isWhiteToMove()?"White":"Black") + " player ("+currentPlayer.getName()+")<br> tries an illegal move:<br>" + m);
+                    LOG.log(Level.SEVERE, message);
+                    JOptionPane.showMessageDialog(rootPane, message, "illegal move", JOptionPane.ERROR_MESSAGE);
+                    finishGame(game,gs); 
                 }
 
-                // recurse
-                continueGame(game,gs); 
             }
         };
         timer.start();

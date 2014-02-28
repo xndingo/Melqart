@@ -2,10 +2,16 @@ package nl.tue.s2id90.groupNN;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import nl.tue.s2id90.contest.util.TimedSearchTask;
 import nl.tue.s2id90.draughts.Draughts;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import org10x10.dam.game.Move;
+import nl.tue.s2id90.contest.util.TimedSearchTask;
 
 /**
  * @author Jeroen van Hoof
@@ -44,8 +50,13 @@ public class PlayerLVL4 extends DraughtsPlayer {
         stopped = true;
     }
 
-    private int miniMax(NodeLVL4 node, int depth, int alpha, int beta) {
+    private int miniMax(NodeLVL4 node, int depth, int alpha, int beta) throws AIStoppedException {
         DraughtsState ds = node.getState();
+        if (stopped){
+            stopped = false;
+            throw new AIStoppedException();
+        }
+        
         if (depth == 0 || ds.isEndState()) {
             stopped = false;
             return node.getValue();
@@ -79,18 +90,51 @@ public class PlayerLVL4 extends DraughtsPlayer {
 
     @Override
     public Move getMove(DraughtsState ds) {
-        int depth = 6;
-        int alpha = Integer.MIN_VALUE;
-        int beta = Integer.MAX_VALUE;
-        int bestScore = -Integer.MAX_VALUE;
         NodeLVL4 node = new NodeLVL4(ds.clone());
         Move bestMove = null;
-        for (Move move : ds.getMoves()) {
+        
+        // Get moves and shuffle them.
+        List<Move> moves = ds.getMoves();
+        Collections.shuffle(moves);
+        int nrOfMoves = moves.size();
+        
+        // Determine depth.
+        int depth = 6;
+        
+        if (nrOfMoves < 12){
+            depth = 8;
+        }
+        if (nrOfMoves < 7){
+            depth = 10;
+        }
+        if (nrOfMoves < 5){
+            depth = 12;
+        }
+        if (nrOfMoves == 1){
+            return moves.get(0);
+        }
+        System.out.println("#LVL4 Calculating at depth: " + depth);
+        
+        // Set alpha, beta and bestScore to (-)infinity.
+        int alpha = Integer.MIN_VALUE;
+        int beta = Integer.MAX_VALUE;
+        int bestScore = Integer.MIN_VALUE;
+        
+        // Determine best move.
+        for (Move move : moves) {
             ds.doMove(move);
             if (bestMove == null) {
                 bestMove = move;
             }
-            alpha = max(alpha, miniMax(new NodeLVL4(ds.clone()), depth - 1, alpha, beta));
+            // If timer stopped, exit move calculation and use best found move.
+            try {
+                alpha = max(alpha, miniMax(new NodeLVL4(ds.clone()), 
+                        depth - 1, alpha, beta));
+            } catch (AIStoppedException ex) {
+                System.out.println("Timer stopped.");
+                ds.undoMove(move);
+                break;
+            }
             if (alpha > bestScore) {
                 bestMove = move;
                 bestScore = alpha;
@@ -98,6 +142,7 @@ public class PlayerLVL4 extends DraughtsPlayer {
             ds.undoMove(move);
         }
 
+        // Return the best move.
         System.out.println("#LVL4 Best score: " + bestScore);
         return bestMove;
     }

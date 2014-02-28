@@ -21,15 +21,15 @@ import nl.tue.s2id90.game.Player;
  */
 public abstract class TimedSearchTask<M, U, S extends GameState<M>>
     extends SearchTask<M, U, S> {
+    static Timer timer = new Timer();  // can schedule multiple tasks, so no need to make a new one
     public TimedSearchTask(Player<M, S> player, S s, int timeLimitInSeconds) {
         super(player, s);
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                TimedSearchTask.this.stop();
+                    TimedSearchTask.this.stop();
             }            
         };
-        Timer timer= new Timer(); timer.schedule(task, timeLimitInSeconds*1000);
-    }
-    
+        timer.schedule(task, timeLimitInSeconds*1000);        
+    }    
 }
