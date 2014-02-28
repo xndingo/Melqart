@@ -19,11 +19,7 @@ public class MyDraughtsPlugin extends DraughtsPlugin {
         // best player available. For testing it might be handy
         // to make more than one player available.
         super(
-                new PlayerLVL0(), 
-                new PlayerLVL1(), 
-                new PlayerLVL2(), 
-                new PlayerLVL3(),
-                new PlayerLVL4()
+                new PlayerLVL5()
         );
     }
 }
