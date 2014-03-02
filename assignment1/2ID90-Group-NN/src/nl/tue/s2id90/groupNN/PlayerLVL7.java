@@ -1,5 +1,6 @@
 package nl.tue.s2id90.groupNN;
 
+import nl.tue.s2id90.groupNN.*;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import java.util.List;
@@ -12,41 +13,23 @@ import org10x10.dam.game.Move;
  * @author Jeroen van Hoof
  * @author Theodoros Margomenos
  */
-public class PlayerLVL6 extends DraughtsPlayer {
+public class PlayerLVL7 extends DraughtsPlayer {
 
     private int value;
     private boolean stopped = false;
     private boolean white;
+    private int lastScore;
 
-    public PlayerLVL6() {
-        super(PlayerLVL6.class.getResource("resources/squirtle.jpg"));
-    }
-
-    /**
-     * Returns the amount of pieces that are on the board given a game state
-     * {@code gs}
-     *
-     * @param gs game state of the board
-     * @return the amount of pieces that are on the board. 0 if empty.
-     */
-    public int getPieceCount(DraughtsState gs) {
-        int[] pieces = gs.getPieces();
-        int count = 0;
-        for (int f = 1; f < pieces.length; f = f + 1) {
-            int piece = pieces[f];
-            if (Draughts.isWhite(piece) || Draughts.isBlack(piece)) {
-                count++;
-            }
-        }
-        return count; //0 if no pieces on the board.
+    public PlayerLVL7() {
+        super(PlayerLVL7.class.getResource("resources/squirtle.jpg"));
     }
 
     @Override
     public void stop() {
         stopped = true;
     }
-
-    private int miniMax(NodeLVL6 node, int depth, int alpha, int beta, 
+ 
+    private int miniMax(NodeLVL7 node, int depth, int alpha, int beta, 
             boolean player) throws AIStoppedException {
         DraughtsState ds = node.getState();
         if (stopped){
@@ -65,7 +48,7 @@ public class PlayerLVL6 extends DraughtsPlayer {
             for (Move move : ds.getMoves()) {
                 ds.doMove(move);
                 // Maximize
-                alpha = max(alpha, miniMax(new NodeLVL6(ds.clone()), 
+                alpha = max(alpha, miniMax(new NodeLVL7(ds.clone()), 
                         depth - 1, alpha, beta, false));
 
                 if (alpha >= beta) {
@@ -78,7 +61,7 @@ public class PlayerLVL6 extends DraughtsPlayer {
             for (Move move : ds.getMoves()) {
                 ds.doMove(move);
                 //Minimize
-                beta = min(beta, miniMax(new NodeLVL6(ds.clone()), depth - 1, alpha, beta, true));
+                beta = min(beta, miniMax(new NodeLVL7(ds.clone()), depth - 1, alpha, beta, true));
 
                 if (alpha >= beta) {
                     return alpha;
@@ -99,7 +82,7 @@ public class PlayerLVL6 extends DraughtsPlayer {
             ds.doMove(move);
                     // If timer stopped, exit move calculation and use best found move.
             // Maximize current player.
-            alpha = max(alpha, miniMax(new NodeLVL6(ds.clone()),
+            alpha = max(alpha, miniMax(new NodeLVL7(ds.clone()),
                     depth - 1, alpha, beta, false));
             ds.undoMove(move);
             if (alpha > tempScore) {
@@ -108,6 +91,7 @@ public class PlayerLVL6 extends DraughtsPlayer {
             }
         }
         
+        this.lastScore = tempScore;
         return tempMove;
     }
     
@@ -115,13 +99,13 @@ public class PlayerLVL6 extends DraughtsPlayer {
     public Move getMove(DraughtsState ds) {
         white = ds.isWhiteToMove();
         
-        NodeLVL6 node = new NodeLVL6(ds.clone());
+        NodeLVL7 node = new NodeLVL7(ds.clone());
         Move bestMove = null;
         Move tempMove = null;
         
         // Starting depth.
-        int depth = 0;
-        int finishedDepth = 0;
+        int depth = 6;
+        int finishedDepth = 6;
         
         // Determine best move.
         while (true) {
@@ -129,11 +113,12 @@ public class PlayerLVL6 extends DraughtsPlayer {
             try {
                 tempMove = findBestMove(depth, ds);
             } catch (AIStoppedException ex) {
-                System.out.println("Depth at " + finishedDepth);
+                System.out.println("#LVL7: Depth at " + finishedDepth);
                 break;
             }
             finishedDepth++;
             bestMove = tempMove;
+            this.value = this.lastScore;
         }
     
         // Return the best move.

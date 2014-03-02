@@ -20,7 +20,8 @@ public class MyDraughtsPlugin extends DraughtsPlugin {
         // to make more than one player available.
         super(
                 new PlayerLVL6(),
-                new PlayerLVL5()
+                new PlayerLVL5(),
+                new PlayerLVL7()
         );
     }
 }
