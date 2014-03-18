@@ -21,7 +21,7 @@ public class InputReader {
     
     // Map QueryVar-vars.
     
-    public void InputReader() {
+    public InputReader() {
         mapQ = new HashMap();
     }
     
@@ -34,7 +34,9 @@ public class InputReader {
     public String getQueryLine() {
         Scanner sc = new Scanner(System.in);
         System.out.print("> ");
-        return sc.nextLine();
+        
+        // Ignore spaces
+        return sc.nextLine().replaceAll(" ", "");
     }
 
     /**
@@ -68,18 +70,18 @@ public class InputReader {
         String queryVar = query.substring(2, query.indexOf("|"));
         
         // Find all var-value pairs.
-        int comma = query.indexOf("|") - 1;
+        int comma = query.indexOf("|");
         
         while (true) {
             
             // Find next comma.
-            int nextComma = query.indexOf(", ", comma + 1);
+            int nextComma = query.indexOf(",", comma + 1);
             
             // Check if there is a next comma.
             if (nextComma != -1){
                 
                 // Output the var-value pair.
-                String pair = query.substring(comma + 2, nextComma);
+                String pair = query.substring(comma + 1, nextComma);
                 addToMap(pair);
                 
                 // Move to the next comma.
@@ -89,7 +91,7 @@ public class InputReader {
             } else {
                 
                 // Output the var-value pair.
-                String pair = query.substring(comma + 2);
+                String pair = query.substring(comma + 1);
                 addToMap(pair);
                 
                 // Break the loop.
