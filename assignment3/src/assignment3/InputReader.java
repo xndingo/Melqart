@@ -1,6 +1,5 @@
 package assignment3;
 
-import static java.lang.Double.parseDouble;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -9,20 +8,47 @@ import java.util.Scanner;
 /**
  * InputReader
  * 
-
+ * Reads the input and stores the variables.
+ * Takes as input for example P(Disease | BirthAphyxia = yes),
+ * and stores the queryVar and maps the conditions. These are retrievable via
+ * getQueryVar() and getConditions().
+ * 
  * 
  * @author Theodoros Margomenos
  * @author Jeroen van Hoof
  */
 public class InputReader {
+      
+    // Queryvar
+    private String queryVar;
+     
+    // Conditions
+    private Map conditions;
     
-    // Map var-value pairs.
-    private Map mapQ;
-    
-    // Map QueryVar-vars.
-    
+    /**
+     * Constructor.
+     */
     public InputReader() {
-        mapQ = new HashMap();
+        queryVar = "";
+        conditions = new HashMap();
+    }
+    
+    /**
+     * Gets the queryVar.
+     * 
+     * @return queryVar
+     */
+    public String getQueryVar() {
+        return queryVar;
+    }
+    
+    /**
+     * Gets the conditions.
+     * 
+     * @return conditions
+     */
+    public Map getConditions() {
+        return conditions;
     }
     
     
@@ -31,7 +57,7 @@ public class InputReader {
      * 
      * @return the raw query from input.
      */
-    public String getQueryLine() {
+    public String readQueryLine() {
         Scanner sc = new Scanner(System.in);
         System.out.print("> ");
         
@@ -45,10 +71,18 @@ public class InputReader {
      * @param pair the var-value string
      */
     public void addToMap(String pair) {
+        
+        // Get variable.
         String var = pair.substring(0, pair.indexOf("="));
-        Double val = parseDouble(pair.substring(pair.indexOf("=") + 1));
+        
+        // Get value.
+        String val = pair.substring(pair.indexOf("=") + 1);
+        
+        // Debugging.
         System.out.println(var + ", " + val);
-        mapQ.put(var, val);
+        
+        // Add condition.
+        conditions.put(var, val);
     }
     
     /**
@@ -56,18 +90,13 @@ public class InputReader {
      * 
      * Reads the input in the form of 
      *      "P("{QueryVar}"|"({Var=value}", ")^(n-1){Var=value}")"
-     * with an optional comma at the end to add more queries.
      */
     public void processQuery() {
         // Get the query from input.
-        String query = getQueryLine();
-        
-        // If last character is a comma, make sure to read next.
-        boolean finished = !",".equals(query.substring(query.length() - 1));
-        query = query.substring(0, query.length() - 1);
-        
+        String query = readQueryLine();
+               
         // Determine the query variable.
-        String queryVar = query.substring(2, query.indexOf("|"));
+        this.queryVar = query.substring(2, query.indexOf("|"));
         
         // Find all var-value pairs.
         int comma = query.indexOf("|");
@@ -91,26 +120,12 @@ public class InputReader {
             } else {
                 
                 // Output the var-value pair.
-                String pair = query.substring(comma + 1);
+                String pair = query.substring(comma + 1, query.indexOf(")"));
                 addToMap(pair);
                 
                 // Break the loop.
                 break;
             }
         }
-        
-        if (!finished) {
-            processQuery();
-        }
     }    
-    
-    
-    
-     /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        InputReader read = new InputReader();
-        read.processQuery();
-    }
 }
