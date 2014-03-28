@@ -14,7 +14,16 @@ import java.util.Scanner;
  * @author Theodoros Margomenos
  */
 public class QueryProcess {
-
+    static private String queryVar;
+    static private Map conditions; 
+    
+    public QueryProcess() {
+        Query query = readQuery();
+        queryVar = query.getQueryVar();
+        conditions = query.getConditions();
+        printQuery(query);
+        getTable(query);
+    }
     /**
      * Just get the query and stuff. What do we do with it? Save it to a map?
      * Return something...
@@ -77,36 +86,106 @@ public class QueryProcess {
         return result;
     }
     
-    public void getTable(Query query) throws FileNotFoundException {
+    public List getTables(Query query) throws FileNotFoundException {
+        List data = readData();
+        List lineNums = getAllLineNums(data);
+        List tables = seperateTables(data, lineNums);       
+        return tables;
         
+    }
+    
+    public List seperateTables(List data, List lineNums) {
+        List tables = new ArrayList();
+
+        for (int lineNr : lineNums.toArray()) {
+            while(true) {
+                
+            }
+        }
+        for(int i = 0; i < lineNums.size(); i++) {
+            data
+            tables.add(i)
+        }
+        return tables;
+    }
+    public List readData() throws FileNotFoundException {
         // Create scanner for database.
         Scanner sc = new Scanner(new File("src/resources/spiegelhalter.txt"));
         
         // Store text in array.
         List<String> lines = new ArrayList<>();
-        int i = 0;
         while (sc.hasNextLine()) {
             String curLine = sc.nextLine();
             lines.add(curLine);
             System.out.println(curLine);
-            i++;
         }
-        
-        // Initialize line number.
-        int lineNr = -1;
-        
-        // Find the line of query variable.
-        //int start = findQueryVar();
-        
+        return lines;
+    }
+    
+    /**
+     * Returns a list with all the line numbers where the query variable is
+     * found. The first element in the list is where the query variable is found
+     * in the first column and all the others are where it's found at another
+     * column but the first. If the query variable can't be found in the first
+     * column of a table in the data set then this returns an empty list.
+     * 
+     * @param lines
+     * @return 
+     */
+    public List getAllLineNums(List<String> lines) {
+        int firstColLineNum = getLine(lines);
+        List otherColLineNums = getLines(lines);
+        List lineNums = new ArrayList();
+        if(firstColLineNum == -1){
+            return lineNums; //empty list cause no first column with queryVar.
+        }        
+        lineNums.add(firstColLineNum);
+        for(int i = 0; i < otherColLineNums.size(); i++) {
+            lineNums.add(otherColLineNums.get(i));
+        }
+        return lineNums;
+    }
+    
+    /**
+     * Gets the line number where the query variable is in the first column.
+     * 
+     * @param lines
+     * @return 
+     */
+    public int getLine(List<String> lines) {
+        int lineNum = -1; // line containing the query variable
+        // finds the line with the query variable in the first column
+        for (int line = 0; line < lines.size(); line++) {
+            if (lines.get(line).startsWith(queryVar)) {
+                lineNum = line;
+                break; // found it so break out
+            }
+        }
+        return lineNum;
+    }
+
+    /**
+     * Returns a list of all the line indexes where the query variable exist
+     * in those lines and isn't in the starting string of those lines.
+     * 
+     * @param lines
+     * @return
+     */
+    public List getLines(List<String> lines) {
+        List lineNums = new ArrayList();
+        // finds the line with the query variable in the first column
+        for (int line = 0; line < lines.size(); line++) {
+            if (!lines.get(line).startsWith(queryVar) &&
+                lines.get(line).contains(queryVar)) {
+                lineNums.add(line);
+            }
+        }
+        return lineNums;
     }
     
     // make a new method that is going to return a boolean
-    public boolean checkTAble() {
-        
-        // Check if the condtions are all at (isSubset) first column
-        // Then true otherwise false
-        // checktable --> true then use method and otherwise use chain rule.
-        
+    public boolean checkTable() {
+
         return false;
     }
     
@@ -177,8 +256,5 @@ public class QueryProcess {
 
     public static void main(String[] args) throws FileNotFoundException {
         QueryProcess proc = new QueryProcess();
-        Query query = proc.readQuery();
-        proc.printQuery(query);
-        proc.getTable(query);
     }
 }
