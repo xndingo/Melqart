@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -14,16 +15,18 @@ import java.util.Scanner;
  * @author Theodoros Margomenos
  */
 public class QueryProcess {
+
     static private String queryVar;
-    static private Map conditions; 
-    
-    public QueryProcess() {
+    static private Map conditions;
+
+    public QueryProcess() throws FileNotFoundException {
         Query query = readQuery();
         queryVar = query.getQueryVar();
         conditions = query.getConditions();
         printQuery(query);
-        getTable(query);
+        getTables(query);
     }
+
     /**
      * Just get the query and stuff. What do we do with it? Save it to a map?
      * Return something...
@@ -70,12 +73,12 @@ public class QueryProcess {
 
             // Get value.
             val = pair.substring(pair.indexOf("=") + 1);
-            
+
             // Put to map.
             map.put(var, val);
             System.out.println("var: " + var);
             System.out.println("val: " + val);
-            
+
             if (nextComma == -1) {
                 break;
             }
@@ -85,33 +88,67 @@ public class QueryProcess {
         System.out.println("Your query was: " + pair);
         return result;
     }
-    
+
     public List getTables(Query query) throws FileNotFoundException {
         List data = readData();
-        List lineNums = getAllLineNums(data);
-        List tables = seperateTables(data, lineNums);       
+        List<Integer> lineNums = getAllLineNums(data);
+        List tables = seperateTables(data, lineNums);
         return tables;
-        
+
+    }
+
+    public int[] toIntArray(List<Integer> list) {
+        int[] result = new int[list.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = list.get(i);
+        }
+        return result;
     }
     
-    public List seperateTables(List data, List lineNums) {
-        List tables = new ArrayList();
+    public String[] toStringArray(List<String> list) {
+        String[] result = new String[list.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = list.get(i);
+        }
+        return result;
+    }    
+    
+    public String[] makeArrayRow(int start, int end, List<String> data) {
+        return toStringArray(data.subList(start, end));
+    }
 
-        for (int lineNr : lineNums.toArray()) {
-            while(true) {
-                
+    public List seperateTables(List<String> data, List<Integer> lineNums) {
+        List tables = new ArrayList();
+        
+        // Convert to int array.
+        int[] lines = toIntArray(lineNums);
+        
+        // Find start and end
+        for (int start : lines) {
+            
+            // Begin iterating at start (header of table).
+            int i = start;
+            
+            // Increase i until we find an empty line.
+            while (!"".equals(data.get(i))) {
+                i++;                
             }
+            
+            // Set the end-point of the table.
+            int end = i;
+            
+            // Add to the table
+            tables.add(makeArrayRow(start, end, data));
         }
-        for(int i = 0; i < lineNums.size(); i++) {
-            data
-            tables.add(i)
-        }
+        
+        //  lineNrs.
         return tables;
     }
+
     public List readData() throws FileNotFoundException {
         // Create scanner for database.
         Scanner sc = new Scanner(new File("src/resources/spiegelhalter.txt"));
-        
+
         // Store text in array.
         List<String> lines = new ArrayList<>();
         while (sc.hasNextLine()) {
@@ -121,36 +158,36 @@ public class QueryProcess {
         }
         return lines;
     }
-    
+
     /**
      * Returns a list with all the line numbers where the query variable is
      * found. The first element in the list is where the query variable is found
      * in the first column and all the others are where it's found at another
      * column but the first. If the query variable can't be found in the first
      * column of a table in the data set then this returns an empty list.
-     * 
+     *
      * @param lines
-     * @return 
+     * @return
      */
     public List getAllLineNums(List<String> lines) {
         int firstColLineNum = getLine(lines);
         List otherColLineNums = getLines(lines);
         List lineNums = new ArrayList();
-        if(firstColLineNum == -1){
+        if (firstColLineNum == -1) {
             return lineNums; //empty list cause no first column with queryVar.
-        }        
+        }
         lineNums.add(firstColLineNum);
-        for(int i = 0; i < otherColLineNums.size(); i++) {
+        for (int i = 0; i < otherColLineNums.size(); i++) {
             lineNums.add(otherColLineNums.get(i));
         }
         return lineNums;
     }
-    
+
     /**
      * Gets the line number where the query variable is in the first column.
-     * 
+     *
      * @param lines
-     * @return 
+     * @return
      */
     public int getLine(List<String> lines) {
         int lineNum = -1; // line containing the query variable
@@ -165,9 +202,9 @@ public class QueryProcess {
     }
 
     /**
-     * Returns a list of all the line indexes where the query variable exist
-     * in those lines and isn't in the starting string of those lines.
-     * 
+     * Returns a list of all the line indexes where the query variable exist in
+     * those lines and isn't in the starting string of those lines.
+     *
      * @param lines
      * @return
      */
@@ -175,25 +212,24 @@ public class QueryProcess {
         List lineNums = new ArrayList();
         // finds the line with the query variable in the first column
         for (int line = 0; line < lines.size(); line++) {
-            if (!lines.get(line).startsWith(queryVar) &&
-                lines.get(line).contains(queryVar)) {
+            if (!lines.get(line).startsWith(queryVar)
+                    && lines.get(line).contains(queryVar)) {
                 lineNums.add(line);
             }
         }
         return lineNums;
     }
-    
+
     // make a new method that is going to return a boolean
     public boolean checkTable() {
 
         return false;
     }
-    
-    
+
     /**
      * Finds and prints the line at which the query variable and corresponding
      * condition variables are.
-     * 
+     *
      * @param queryVar the query variable
      * @param vars the condition variables
      * @return the line number of the header of the table we need
@@ -219,7 +255,6 @@ public class QueryProcess {
 //        
 //        return -1;
 //    }    
-
     /**
      * Scans the query.
      *
@@ -248,10 +283,10 @@ public class QueryProcess {
         String val = pair.substring(pair.indexOf("=") + 1);
 
     }
-    
+
     public void printQuery(Query query) {
         System.out.println("Your query variable is: " + query.getQueryVar());
-        System.out.println("Your conditions are: " + query.getConditions());        
+        System.out.println("Your conditions are: " + query.getConditions());
     }
 
     public static void main(String[] args) throws FileNotFoundException {
