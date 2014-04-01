@@ -1,8 +1,19 @@
+// P(HypDistrib | DuctFlow=Lt_to_Rt) should return false
+// Printed line before it should equal the line before that
+// Fix checkConditions and do something with the String-cast stuff.
+// The problem is in the getTables.
+
+/* P(CO2|LungParench=Normal)
+P(LungParench | Disease=PFC)
+P(HypDistrib | DuctFlow=Lt_to_Rt) */
+
 package assignment3;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,16 +28,81 @@ import java.util.Scanner;
 public class QueryProcess {
 
     static private String queryVar;
-    static private Map conditions;
+    static private Map<String, String> conditions;
 
     public QueryProcess() throws FileNotFoundException {
         Query query = readQuery();
         queryVar = query.getQueryVar();
         conditions = query.getConditions();
         printQuery(query);
-        getTables(query);
+        List tables = getTables(query);
+        System.out.println(tables.get(0));
+        if (checkConditions((String[]) tables.get(0))){
+            System.out.println("true");
+        } else {
+            System.out.println("false");
+        }
+        boolean check = checkConditions(new String[]{
+            "HypDistrib DuctFlow CardiacMixing",
+            "Equal      Lt_to_Rt None          0.95",
+            "Unequal    Lt_to_Rt None          0.05",
+            "Equal      None     None          0.95",
+            "Unequal    None     None          0.05",
+            "Equal      Rt_to_Lt None          0.05",
+            "Unequal    Rt_to_Lt None          0.95",
+            "Equal      Lt_to_Rt Mild          0.95",
+            "Unequal    Lt_to_Rt Mild          0.05",
+            "Equal      None     Mild          0.95",
+            "Unequal    None     Mild          0.05",
+            "Equal      Rt_to_Lt Mild          0.5",
+            "Unequal    Rt_to_Lt Mild          0.5", 
+            "Equal      Lt_to_Rt Complete      0.95",
+            "Unequal    Lt_to_Rt Complete      0.05",
+            "Equal      None     Complete      0.95",
+            "Unequal    None     Complete      0.05",
+            "Equal      Rt_to_Lt Complete      0.95",
+            "Unequal    Rt_to_Lt Complete      0.05",
+            "Equal      Lt_to_Rt Transp.       0.95",
+            "Unequal    Lt_to_Rt Transp.       0.05",
+            "Equal      None     Transp.       0.95",
+            "Unequal    None     Transp.       0.05",
+            "Equal      Rt_to_Lt Transp.       0.5",
+            "Unequal    Rt_to_Lt Transp.       0.5",
+        });
+        
+        //System.out.println(check);
+        
+//        getNumAnswers(new String[]{
+//            "HypDistrib DuctFlow CardiacMixing",
+//            "Equal      Lt_to_Rt None          0.95",
+//            "Unequal    Lt_to_Rt None          0.05",
+//            "Equal      None     None          0.95",
+//            "Unequal    None     None          0.05",
+//            "Equal      Rt_to_Lt None          0.05",
+//            "Unequal    Rt_to_Lt None          0.95",
+//            "Equal      Lt_to_Rt Mild          0.95",
+//            "Unequal    Lt_to_Rt Mild          0.05",
+//            "Equal      None     Mild          0.95",
+//            "Unequal    None     Mild          0.05",
+//            "Equal      Rt_to_Lt Mild          0.5",
+//            "Unequal    Rt_to_Lt Mild          0.5", 
+//            "Equal      Lt_to_Rt Complete      0.95",
+//            "Unequal    Lt_to_Rt Complete      0.05",
+//            "Equal      None     Complete      0.95",
+//            "Unequal    None     Complete      0.05",
+//            "Equal      Rt_to_Lt Complete      0.95",
+//            "Unequal    Rt_to_Lt Complete      0.05",
+//            "Equal      Lt_to_Rt Transp.       0.95",
+//            "Unequal    Lt_to_Rt Transp.       0.05",
+//            "Equal      None     Transp.       0.95",
+//            "Unequal    None     Transp.       0.05",
+//            "Equal      Rt_to_Lt Transp.       0.5",
+//            "Unequal    Rt_to_Lt Transp.       0.5",
+//        });
     }
 
+    
+    
     /**
      * Just get the query and stuff. What do we do with it? Save it to a map?
      * Return something...
@@ -34,7 +110,7 @@ public class QueryProcess {
     public Query readQuery() {
 
         // Initialize map for putting in the query parts.
-        Map map = new HashMap();
+        Map<String, String> map = new HashMap<String, String>();
 
         // Get the query from input.
         String query = readQueryLine();
@@ -85,60 +161,80 @@ public class QueryProcess {
         }
         result = new Query(queryVar, map);
 
-        System.out.println("Your query was: " + pair);
         return result;
+    }
+
+    public int getNumAnswers(String[] lines) {
+        String first = lines[1].substring(0, lines[1].indexOf(" "));
+       
+        int answers = 0;
+        
+        for (int i = 2; i < lines.length; i++) {
+            int end = lines[i].indexOf(" ");
+            String current = lines[i].substring(0, end);
+            answers++;
+            if (current.equals(first)) {
+                return answers;
+            }
+        }
+        return answers;
+    }
+    
+    public boolean checkConditions(String[] lines) {
+        for(String condition : conditions.keySet()) {
+            if (!lines[0].contains(condition)){
+                return false;
+            }
+        }
+        return true;
     }
 
     public List getTables(Query query) throws FileNotFoundException {
         List data = readData();
         List<Integer> lineNums = getAllLineNums(data);
+        System.out.println(lineNums);
+        
+        // List of arrays
         List tables = seperateTables(data, lineNums);
+
+        for (int i = 0; i < tables.size(); i++) {
+             System.out.println(Arrays.deepToString((Object[]) tables.get(i)));
+        }
+        
         return tables;
-
     }
-
-    public int[] toIntArray(List<Integer> list) {
-        int[] result = new int[list.size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = list.get(i);
-        }
-        return result;
-    }
-    
-    public String[] toStringArray(List<String> list) {
-        String[] result = new String[list.size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = list.get(i);
-        }
-        return result;
-    }    
-    
-    public String[] makeArrayRow(int start, int end, List<String> data) {
-        return toStringArray(data.subList(start, end));
-    }
-
+   
     public List seperateTables(List<String> data, List<Integer> lineNums) {
-        List tables = new ArrayList();
+        List tables = new ArrayList<String>();
         
-        // Convert to int array.
-        int[] lines = toIntArray(lineNums);
-        
-        // Find start and end
-        for (int start : lines) {
-            
-            // Begin iterating at start (header of table).
+        for (int k = 0; k < lineNums.size(); k++) {
+            int start = lineNums.get(k) - 1;
             int i = start;
             
             // Increase i until we find an empty line.
             while (!"".equals(data.get(i))) {
-                i++;                
+                i++;    
             }
             
             // Set the end-point of the table.
             int end = i;
             
+            System.out.println("start = " + start);
+            System.out.println("end = " + end);
+            
+            // Print lines
+            String[] entry = new String[end-start];
+            for (int line = start; line < end; line++) {
+                entry[line-start] = data.get(line);
+                System.out.println(data.get(line));
+            }
+            
+            for (String ent : entry) {
+                System.out.println(ent);
+            }
+            
             // Add to the table
-            tables.add(makeArrayRow(start, end, data));
+            tables.add(entry);
         }
         
         //  lineNrs.
@@ -154,7 +250,6 @@ public class QueryProcess {
         while (sc.hasNextLine()) {
             String curLine = sc.nextLine();
             lines.add(curLine);
-            System.out.println(curLine);
         }
         return lines;
     }
@@ -171,6 +266,7 @@ public class QueryProcess {
      */
     public List getAllLineNums(List<String> lines) {
         int firstColLineNum = getLine(lines);
+        System.out.println(firstColLineNum);
         List otherColLineNums = getLines(lines);
         List lineNums = new ArrayList();
         if (firstColLineNum == -1) {
@@ -194,7 +290,7 @@ public class QueryProcess {
         // finds the line with the query variable in the first column
         for (int line = 0; line < lines.size(); line++) {
             if (lines.get(line).startsWith(queryVar)) {
-                lineNum = line;
+                lineNum = line + 1;
                 break; // found it so break out
             }
         }
@@ -214,7 +310,7 @@ public class QueryProcess {
         for (int line = 0; line < lines.size(); line++) {
             if (!lines.get(line).startsWith(queryVar)
                     && lines.get(line).contains(queryVar)) {
-                lineNums.add(line);
+                lineNums.add(line + 1);
             }
         }
         return lineNums;
@@ -226,35 +322,6 @@ public class QueryProcess {
         return false;
     }
 
-    /**
-     * Finds and prints the line at which the query variable and corresponding
-     * condition variables are.
-     *
-     * @param queryVar the query variable
-     * @param vars the condition variables
-     * @return the line number of the header of the table we need
-     */
-//    public int findQueryVar(String queryVar, String[] vars) {
-//        int lineNr = 0;
-//        
-//        for(String line : this.database) {
-//            
-//            // Check if line contains queryVar.
-//            if (line.indexOf(queryVar) != -1) {
-//                // Break down per word.
-//                String[] words = line.split(" ");
-//                               
-//                // Check if every word is a condition in the input.
-//                if (isSubset(words, vars)) {
-//                    System.out.println(line);
-//                    return lineNr;
-//                }
-//            }
-//            lineNr++;
-//        }
-//        
-//        return -1;
-//    }    
     /**
      * Scans the query.
      *
