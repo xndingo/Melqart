@@ -35,40 +35,51 @@ public class QueryProcess {
         queryVar = query.getQueryVar();
         conditions = query.getConditions();
         printQuery(query);
-        List tables = getTables(query);
-        System.out.println(tables.get(0));
-        if (checkConditions((String[]) tables.get(0))){
+        List<String[]> tables = getTables(query);
+        
+        System.out.println("-----");
+        System.out.println("Printing tables in QueryProcess...");
+        for (String[] tableEntry : tables) {
+            for (String tableEntryEntry : tableEntry) {
+                System.out.println(tableEntryEntry);
+            }
+        }
+//        String[] blub = (String[]) tables.get(0);
+//        System.out.println("First entry of seperateTables = " + blub[0]);
+        
+        // Something still goes wrong here.
+        if (checkConditions(tables.get(0))){
             System.out.println("true");
         } else {
             System.out.println("false");
         }
-        boolean check = checkConditions(new String[]{
-            "HypDistrib DuctFlow CardiacMixing",
-            "Equal      Lt_to_Rt None          0.95",
-            "Unequal    Lt_to_Rt None          0.05",
-            "Equal      None     None          0.95",
-            "Unequal    None     None          0.05",
-            "Equal      Rt_to_Lt None          0.05",
-            "Unequal    Rt_to_Lt None          0.95",
-            "Equal      Lt_to_Rt Mild          0.95",
-            "Unequal    Lt_to_Rt Mild          0.05",
-            "Equal      None     Mild          0.95",
-            "Unequal    None     Mild          0.05",
-            "Equal      Rt_to_Lt Mild          0.5",
-            "Unequal    Rt_to_Lt Mild          0.5", 
-            "Equal      Lt_to_Rt Complete      0.95",
-            "Unequal    Lt_to_Rt Complete      0.05",
-            "Equal      None     Complete      0.95",
-            "Unequal    None     Complete      0.05",
-            "Equal      Rt_to_Lt Complete      0.95",
-            "Unequal    Rt_to_Lt Complete      0.05",
-            "Equal      Lt_to_Rt Transp.       0.95",
-            "Unequal    Lt_to_Rt Transp.       0.05",
-            "Equal      None     Transp.       0.95",
-            "Unequal    None     Transp.       0.05",
-            "Equal      Rt_to_Lt Transp.       0.5",
-            "Unequal    Rt_to_Lt Transp.       0.5",
-        });
+//        boolean check = checkConditions(new String[]{
+//            "HypDistrib DuctFlow CardiacMixing",
+//            "Equal      Lt_to_Rt None          0.95",
+//            "Unequal    Lt_to_Rt None          0.05",
+//            "Equal      None     None          0.95",
+//            "Unequal    None     None          0.05",
+//            "Equal      Rt_to_Lt None          0.05",
+//            "Unequal    Rt_to_Lt None          0.95",
+//            "Equal      Lt_to_Rt Mild          0.95",
+//            "Unequal    Lt_to_Rt Mild          0.05",
+//            "Equal      None     Mild          0.95",
+//            "Unequal    None     Mild          0.05",
+//            "Equal      Rt_to_Lt Mild          0.5",
+//            "Unequal    Rt_to_Lt Mild          0.5", 
+//            "Equal      Lt_to_Rt Complete      0.95",
+//            "Unequal    Lt_to_Rt Complete      0.05",
+//            "Equal      None     Complete      0.95",
+//            "Unequal    None     Complete      0.05",
+//            "Equal      Rt_to_Lt Complete      0.95",
+//            "Unequal    Rt_to_Lt Complete      0.05",
+//            "Equal      Lt_to_Rt Transp.       0.95",
+//            "Unequal    Lt_to_Rt Transp.       0.05",
+//            "Equal      None     Transp.       0.95",
+//            "Unequal    None     Transp.       0.05",
+//            "Equal      Rt_to_Lt Transp.       0.5",
+//            "Unequal    Rt_to_Lt Transp.       0.5",
+//        });
         
         //System.out.println(check);
         
@@ -152,8 +163,8 @@ public class QueryProcess {
 
             // Put to map.
             map.put(var, val);
-            System.out.println("var: " + var);
-            System.out.println("val: " + val);
+//            System.out.println("var: " + var);
+//            System.out.println("val: " + val);
 
             if (nextComma == -1) {
                 break;
@@ -182,29 +193,37 @@ public class QueryProcess {
     
     public boolean checkConditions(String[] lines) {
         for(String condition : conditions.keySet()) {
+            System.out.println("-----");
+            System.out.println("Checking for " + condition);
             if (!lines[0].contains(condition)){
+                System.out.println(lines[0] + " does not contain " + condition);
                 return false;
+            } else {
+                System.out.println(lines[0] + " contains " + condition);
             }
         }
         return true;
     }
 
-    public List getTables(Query query) throws FileNotFoundException {
+    public List<String[]> getTables(Query query) throws FileNotFoundException {
         List data = readData();
         List<Integer> lineNums = getAllLineNums(data);
-        System.out.println(lineNums);
+//        System.out.println(lineNums);
         
         // List of arrays
-        List tables = seperateTables(data, lineNums);
-
-        for (int i = 0; i < tables.size(); i++) {
-             System.out.println(Arrays.deepToString((Object[]) tables.get(i)));
-        }
+        List<String[]> tables = seperateTables(data, lineNums);
         
+//        String[] blub = (String[]) tables.get(0);
+//        System.out.println("First entry of seperateTables in getTables = " + blub[0]);
+
+//        for (int i = 0; i < tables.size(); i++) {
+//             System.out.println(Arrays.deepToString((Object[]) tables.get(i)));
+//        }
+
         return tables;
     }
    
-    public List seperateTables(List<String> data, List<Integer> lineNums) {
+    public List<String> seperateTables(List<String> data, List<Integer> lineNums) {
         List tables = new ArrayList<String>();
         
         for (int k = 0; k < lineNums.size(); k++) {
@@ -219,29 +238,31 @@ public class QueryProcess {
             // Set the end-point of the table.
             int end = i;
             
-            System.out.println("start = " + start);
-            System.out.println("end = " + end);
+//            System.out.println("start = " + start);
+//            System.out.println("end = " + end);
             
             // Print lines
             String[] entry = new String[end-start];
             for (int line = start; line < end; line++) {
                 entry[line-start] = data.get(line);
-                System.out.println(data.get(line));
+//                System.out.println(data.get(line));
             }
             
-            for (String ent : entry) {
-                System.out.println(ent);
-            }
+//            for (String ent : entry) {
+//                System.out.println(ent);
+//            }
             
             // Add to the table
             tables.add(entry);
         }
+        String[] blub = (String[]) tables.get(0);
+//        System.out.println("First entry of seperateTables = " + blub[0]);
         
         //  lineNrs.
         return tables;
     }
 
-    public List readData() throws FileNotFoundException {
+    public List<String> readData() throws FileNotFoundException {
         // Create scanner for database.
         Scanner sc = new Scanner(new File("src/resources/spiegelhalter.txt"));
 
@@ -266,7 +287,7 @@ public class QueryProcess {
      */
     public List getAllLineNums(List<String> lines) {
         int firstColLineNum = getLine(lines);
-        System.out.println(firstColLineNum);
+        //System.out.println(firstColLineNum);
         List otherColLineNums = getLines(lines);
         List lineNums = new ArrayList();
         if (firstColLineNum == -1) {
